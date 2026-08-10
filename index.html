@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>아랍어 살롱 — Bruno 학습</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  :root {
+    --ink: #1a1a1a; --sub: #666; --line: #ddd; --bg: #faf9f6; --card: #fff;
+    --accent: #0b6e4f; --accent-soft: #e6f2ee; --wrong: #c0392b; --right: #0b6e4f;
+  }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    min-height: 100vh;
+  }
+  .arabic {
+    direction: rtl; unicode-bidi: isolate;
+    font-family: "SF Arabic", "Geeza Pro", "Arial Unicode MS", sans-serif;
+    font-weight: 600; line-height: 1.5;
+  }
+  header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card);
+    position: sticky; top: 0; z-index: 5;
+  }
+  header h1 { font-size: 17px; cursor: pointer; }
+  header .crumb { font-size: 14px; color: var(--sub); }
+  main { max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* dashboard */
+  .stats { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+  .stat {
+    flex: 1; min-width: 140px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .stat b { font-size: 26px; display: block; }
+  .stat span { font-size: 13px; color: var(--sub); }
+  .menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .menu button {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px 18px; font-size: 17px; font-weight: 700; text-align: left;
+    cursor: pointer; font-family: inherit; color: var(--ink);
+  }
+  .menu button small { display: block; font-weight: 400; font-size: 13px; color: var(--sub); margin-top: 5px; }
+  .menu button:active { background: var(--accent-soft); }
+  .menu .wide { grid-column: 1 / -1; }
+
+  /* flashcard */
+  .card-stage {
+    position: relative; overflow: hidden;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    min-height: 380px; padding: 30px 24px; text-align: center; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: center; gap: 14px;
+  }
+  .tbar { position: absolute; top: 0; left: 0; right: 0; height: 6px; background: var(--accent-soft); }
+  .tbar-fill { height: 100%; width: 0; background: var(--accent); }
+  .card-stage .arabic { font-size: 72px; }
+  .card-emoji { font-size: 64px; line-height: 1; }
+  .card-photo { height: 170px; width: 170px; object-fit: cover; border-radius: 14px; }
+  .list-thumb { float: left; width: 76px; height: 76px; object-fit: cover; border-radius: 10px; margin: 2px 14px 4px 0; }
+  .auto-bar { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 14px; color: var(--sub); }
+  .auto-bar select { font-family: inherit; font-size: 15px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); }
+  .card-stage .ko-big { font-size: 34px; font-weight: 700; }
+  .back-line { font-size: 16px; color: var(--sub); }
+  .back-line b { color: var(--ink); font-size: 20px; }
+  .fem-line { font-size: 15px; color: var(--sub); }
+  .fem-line .arabic { display: inline; font-size: 30px; }
+  .ex-line .arabic { display: block; font-size: 30px; }
+  .note-line { font-size: 14px; color: var(--accent); }
+  .controls { display: flex; gap: 10px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+  .controls button, .choice, .bigbtn {
+    font-family: inherit; font-size: 16px; padding: 12px 20px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--card); cursor: pointer; color: var(--ink);
+  }
+  .controls .primary, .bigbtn.primary { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+  .hint { text-align: center; color: var(--sub); font-size: 13px; margin-top: 10px; }
+
+  /* quiz */
+  .quiz-q {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 28px 20px; text-align: center; margin-bottom: 14px;
+  }
+  .quiz-q .arabic { font-size: 64px; }
+  .quiz-q .ko-big { font-size: 30px; font-weight: 700; }
+  .quiz-q .prompt { font-size: 14px; color: var(--sub); margin-bottom: 10px; }
+  .choices { display: grid; gap: 10px; }
+  .choice { text-align: center; font-size: 18px; padding: 16px; }
+  .choice .arabic { font-size: 34px; }
+  .choice.right { border-color: var(--right); background: var(--accent-soft); }
+  .choice.wrong { border-color: var(--wrong); background: #fdecea; }
+  .feedback { text-align: center; margin-top: 14px; font-size: 15px; min-height: 44px; }
+  .assembled {
+    direction: rtl; min-height: 64px; margin-top: 14px; padding: 10px;
+    border: 2px dashed var(--line); border-radius: 12px; font-size: 38px;
+  }
+  .tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; direction: rtl; }
+  .tile { font-size: 30px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+  .tile:disabled { opacity: .25; }
+  .feedback .why { color: var(--accent); }
+  .score { text-align: center; color: var(--sub); font-size: 14px; margin-bottom: 12px; }
+
+  /* patterns study */
+  .pattern-set { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+  .pattern-set h3 { font-size: 15px; color: var(--sub); margin-bottom: 10px; font-weight: 600; }
+  .pattern-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px dashed var(--line); }
+  .pattern-row:first-of-type { border-top: none; }
+  .pattern-row .arabic { font-size: 34px; }
+  .pattern-row .desc { font-size: 14px; }
+  .pattern-row .desc b { display: block; font-size: 16px; }
+  .pattern-row .desc span { color: var(--sub); font-size: 12.5px; }
+  .rule-box { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; font-size: 14.5px; line-height: 1.7; margin-bottom: 16px; }
+
+  /* drive mode */
+  .drive-stage {
+    background: #10141a; color: #fff; border-radius: 18px; min-height: 420px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 18px; padding: 30px 20px; text-align: center;
+  }
+  .drive-stage .step-label { font-size: 15px; color: #8fb3a5; letter-spacing: .06em; }
+  .drive-stage .main-text { font-size: 44px; font-weight: 800; line-height: 1.3; }
+  .drive-stage .main-text.arabic { font-size: 76px; }
+  .drive-stage .sub-text { font-size: 20px; color: #aaa; }
+  .drive-ctl { display: flex; gap: 10px; margin-top: 16px; justify-content: center; flex-wrap: wrap; }
+  .drive-ctl button { font-size: 17px; padding: 14px 22px; }
+  .toggle.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* phrase list */
+  .phrase-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px; }
+  .phrase-card .arabic { font-size: 40px; }
+  .phrase-card .kp { font-size: 18px; font-weight: 700; margin-top: 4px; }
+  .phrase-card .rm { font-size: 13px; color: var(--sub); }
+  .phrase-card .mn { font-size: 14.5px; margin-top: 6px; border-top: 1px solid var(--line); padding-top: 6px; }
+  @media (max-width: 520px) {
+    .card-stage .arabic { font-size: 54px; }
+    .quiz-q .arabic { font-size: 48px; }
+    .drive-stage .main-text.arabic { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1 onclick="go('home')">🕌 아랍어 살롱</h1>
+  <span class="crumb" id="crumb"></span>
+</header>
+<main id="main"></main>
+
+<script src="data.js"></script>
+<script src="images.js"></script>
+<script src="audio.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const todayKey = () => "wrong-" + new Date().toISOString().slice(0, 10);
+const seenKey = () => "seen-" + new Date().toISOString().slice(0, 10);
+const getSet = (k) => new Set(JSON.parse(localStorage.getItem(k) || "[]"));
+const saveSet = (k, set) => localStorage.setItem(k, JSON.stringify([...set]));
+const markSeen = (id) => { const s = getSet(seenKey()); s.add(id); saveSet(seenKey(), s); };
+const markWrong = (id) => { const s = getSet(todayKey()); s.add(id); saveSet(todayKey(), s); };
+const clearWrong = (id) => { const s = getSet(todayKey()); s.delete(id); saveSet(todayKey(), s); };
+
+// 단어 상태 추적: 새 단어 → 학습중 → 아는 단어(연속 3회 정답). 틀리면 다시 학습중.
+const getStats = () => JSON.parse(localStorage.getItem("wordstats") || "{}");
+function bump(id, ok) {
+  const stats = getStats();
+  const s = stats[id] || { seen: 0, streak: 0 };
+  s.seen++;
+  s.streak = ok ? s.streak + 1 : 0;
+  stats[id] = s;
+  localStorage.setItem("wordstats", JSON.stringify(stats));
+}
+function statusOf(id, stats) {
+  const s = (stats || getStats())[id];
+  if (!s || !s.seen) return "new";
+  return s.streak >= 3 ? "known" : "learning";
+}
+const shuffle = (a) => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
+VOCAB.push(...JSON.parse(localStorage.getItem("customVocab") || "[]"));
+const byId = Object.fromEntries(VOCAB.map(w => [w.id, w]));
+
+// ── TTS (없어도 앱은 동작; 있으면 아랍어/한국어 읽어줌)
+let arVoice = null, koVoice = null;
+function loadVoices() {
+  const vs = speechSynthesis.getVoices();
+  arVoice = vs.find(v => v.lang.startsWith("ar")) || null;
+  koVoice = vs.find(v => v.lang.startsWith("ko")) || null;
+}
+if ("speechSynthesis" in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text, lang, rate = 1, onend) {
+  if (!("speechSynthesis" in window)) { onend && setTimeout(onend, 800); return; }
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang;
+  const v = lang.startsWith("ar") ? arVoice : koVoice;
+  if (v) u.voice = v;
+  u.rate = rate;
+  if (onend) { u.onend = onend; u.onerror = onend; }
+  speechSynthesis.speak(u);
+}
+let curAudio = null;
+const stopSpeak = () => {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (curAudio) { curAudio.pause(); curAudio = null; }
+};
+// 아랍어 발음: 선택한 보이스의 녹음 파일 → grady 폴백 → 브라우저 TTS 폴백
+const VOICES = [
+  { id: "grady", label: "1번 · 남성 (Grady)" },
+  { id: "yara", label: "2번 · 여성 (Yara)" },
+  { id: "marcus", label: "3번 · 남성 (Marcus)" },
+  { id: "soraya", label: "4번 · 여성 (Soraya)" },
+];
+const getVoice = () => localStorage.getItem("voice") || "grady";
+function sayAr(id, text, rate = 0.85, onend) {
+  stopSpeak();
+  if (typeof AUDIO !== "undefined" && AUDIO.has(id)) {
+    const a = new Audio(`audio/${getVoice()}/${id}.mp3`);
+    a.playbackRate = rate / 0.85;
+    curAudio = a;
+    if (onend) a.onended = () => onend();
+    a.onerror = () => {
+      const g = new Audio(`audio/grady/${id}.mp3`);
+      g.playbackRate = rate / 0.85;
+      curAudio = g;
+      if (onend) g.onended = () => onend();
+      g.onerror = () => speak(text, "ar-SA", rate, onend);
+      g.play();
+    };
+    a.play();
+  } else speak(text, "ar-SA", rate, onend);
+}
+// 한국어 뜻 발음: 전용 녹음(Hana) → 브라우저 TTS 폴백
+function sayKo(id, text, onend) {
+  stopSpeak();
+  if (typeof AUDIO !== "undefined" && AUDIO.has(id)) {
+    const a = new Audio(`audio/ko/${id}.mp3`);
+    curAudio = a;
+    if (onend) a.onended = () => onend();
+    a.onerror = () => speak(text, "ko-KR", 1, onend);
+    a.play();
+  } else speak(text, "ko-KR", 1, onend);
+}
+function setVoice(v) {
+  localStorage.setItem("voice", v);
+  document.querySelectorAll("[data-voice]").forEach(b => {
+    const on = b.dataset.voice === v;
+    b.style.background = on ? "var(--accent)" : "var(--card)";
+    b.style.color = on ? "#fff" : "var(--ink)";
+    b.style.borderColor = on ? "var(--accent)" : "var(--line)";
+  });
+  sayAr("salaam", "السَّلَامُ عَلَيْكُمْ");
+}
+
+// ── 단축키 설정 (기본값 + 사용자 변경, localStorage 저장)
+const DEFAULT_KEYS = { prev: "KeyQ", pause: "KeyW", next: "KeyE", speak: "Digit1", flip: "Digit2", star: "Digit3", dunno: "Digit4", know: "Digit5" };
+const KEY_NAMES = { prev: "이전 카드", pause: "일시정지/뒤집기", next: "다음 카드", speak: "발음 듣기", flip: "내용보기", star: "안 외워짐 체크", dunno: "몰라요", know: "알아요" };
+const savedKeymap = JSON.parse(localStorage.getItem("keymap") || "{}");
+if (!savedKeymap.flip) localStorage.removeItem("keymap"); // 구버전 키맵은 새 기본값으로 초기화
+let KEYS = { ...DEFAULT_KEYS, ...(savedKeymap.flip ? savedKeymap : {}) };
+const saveKeys = () => localStorage.setItem("keymap", JSON.stringify(KEYS));
+const keyLabel = (code) => ({ Space: "스페이스", ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Enter: "Enter" }[code] || code.replace(/^Key|^Digit|^Numpad/, ""));
+
+// ── 라우팅
+const views = {};
+let currentView = "";
+function go(name, arg) {
+  currentView = name;
+  stopSpeak(); driveStop();
+  if (typeof clearCardTimers === "function") clearCardTimers();
+  const labels = { home: "", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
+  $("#crumb").textContent = labels[name] || "";
+  views[name](arg);
+  window.scrollTo(0, 0);
+}
+
+// ── 대시보드
+views.home = () => {
+  const wrong = getSet(todayKey()).size;
+  const seen = getSet(seenKey()).size;
+  const starred = getSet("starred").size;
+  const stats = getStats();
+  const known = VOCAB.filter(w => statusOf(w.id, stats) === "known").length;
+  const learning = VOCAB.filter(w => statusOf(w.id, stats) === "learning").length;
+  $("#main").innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${VOCAB.length}</b><span>누적 단어</span></div>
+      <div class="stat"><b>${learning}</b><span>학습중</span></div>
+      <div class="stat" style="${known ? 'border-color:var(--accent)' : ''}"><b>${known}</b><span>아는 단어 (3연속 정답)</span></div>
+      <div class="stat" style="${wrong ? 'border-color:var(--wrong)' : ''}"><b>${wrong}</b><span>오늘 틀린 단어</span></div>
+    </div>
+    <div class="menu">
+      <button class="wide" style="border-color:var(--accent);background:var(--accent-soft)" onclick="go('cards','today')">📅 오늘의 학습 <small>웜업(학습중 최대 10개) + 새 단어 최대 7개</small></button>
+      ${wrong ? `<button class="wide" style="border-color:var(--wrong)" onclick="go('cards','wrong')">🔁 오늘의 복습 <small>틀린 ${wrong}개 다시 보기</small></button>` : ""}
+      ${starred ? `<button class="wide" style="border-color:#e0a800" onclick="go('cards','starred')">⭐ 안 외워지는 단어 <small>체크한 ${starred}개만 반복</small></button>` : ""}
+      ${menuOrder().map(id => MENU_DEFS[id] ? `<button onclick="${MENU_DEFS[id].action}">${MENU_DEFS[id].html}</button>` : "").join("")}
+    </div>`;
+};
+// 메뉴 순서 (설정에서 변경 가능)
+const MENU_DEFS = {
+  cards: { name: "단어 카드", html: "🃏 단어 카드 <small>큰 글씨 + 모음표시</small>", action: "go('cards')" },
+  list: { name: "단어장 목록", html: "📖 단어장 목록 <small>전체 단어 쭉 보기</small>", action: "go('list')" },
+  quiz: { name: "복습 퀴즈", html: "✍️ 복습 퀴즈 <small>뜻·성별·한정 맞히기</small>", action: "go('quiz')" },
+  patterns: { name: "문법 패턴", html: "📐 문법 패턴 <small>형용사 3패턴 · هَلْ 의문문</small>", action: "go('patterns')" },
+  drive: { name: "운전 모드", html: "🚗 운전 모드 <small>듣기 반복 (뜻→아랍어→발음)</small>", action: "go('drive')" },
+  phrases: { name: "회화 표현", html: "💬 회화 표현 <small>인사·감사·일상 표현</small>", action: "go('phrases')" },
+  pdf: { name: "PDF 열기", html: "📄 PDF 열기 <small>프린트용 단어장</small>", action: "window.open('pdf/arabic-basic-vocab-large.pdf')" },
+  add: { name: "단어 추가", html: "➕ 단어 추가 <small>직접 수집한 단어 등록</small>", action: "go('add')" },
+  settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
+};
+const DEFAULT_MENU = ["cards", "list", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
+function menuOrder() {
+  const saved = JSON.parse(localStorage.getItem("menuOrder") || "[]").filter(id => MENU_DEFS[id]);
+  return [...saved, ...DEFAULT_MENU.filter(id => !saved.includes(id))];
+}
+function moveMenu(id, dir) {
+  const order = menuOrder();
+  const i = order.indexOf(id), j = i + dir;
+  if (j < 0 || j >= order.length) return;
+  [order[i], order[j]] = [order[j], order[i]];
+  localStorage.setItem("menuOrder", JSON.stringify(order));
+  views.keys();
+}
+
+// ── 단어 카드
+let deck = [], deckIdx = 0, flipped = false, autoSec = 0, cardTimers = [], autoPaused = false, cardsMode;
+// 단어 필터: 품사 그룹 / ⭐안외워짐만 / 🏆아는 단어 제외 (카드·단어장 공용, 저장됨)
+let wordFilter = JSON.parse(localStorage.getItem("wordFilter") || '{"pos":"","starOnly":false,"skipKnown":false}');
+const POS_GROUPS = { "명사": ["명사", "집합명사"], "형용사": ["형용사", "분사"], "동사": ["동사"] };
+function posGroup(w) {
+  for (const g in POS_GROUPS) if (POS_GROUPS[g].includes(w.pos)) return g;
+  return "기타";
+}
+function applyFilter(list) {
+  const s = getSet("starred"), stats = getStats();
+  return list.filter(w =>
+    (!wordFilter.pos || posGroup(w) === wordFilter.pos) &&
+    (!wordFilter.starOnly || s.has(w.id)) &&
+    (!wordFilter.skipKnown || statusOf(w.id, stats) !== "known"));
+}
+function setWF(k, v, view, arg) {
+  wordFilter[k] = v;
+  localStorage.setItem("wordFilter", JSON.stringify(wordFilter));
+  go(view, arg);
+}
+const wfChip = (label, active, onclick) =>
+  `<button onclick="${onclick}" style="font-family:inherit;font-size:13px;padding:7px 12px;border-radius:18px;cursor:pointer;border:1px solid ${active ? "var(--accent)" : "var(--line)"};background:${active ? "var(--accent)" : "var(--card)"};color:${active ? "#fff" : "var(--ink)"}">${label}</button>`;
+let hideImg = localStorage.getItem("hideImg") === "1";
+function toggleImg() {
+  hideImg = !hideImg;
+  localStorage.setItem("hideImg", hideImg ? "1" : "0");
+  renderCard();
+}
+const clearCardTimers = () => { cardTimers.forEach(clearTimeout); cardTimers = []; };
+// 한 번에 한 페이즈만 예약: 앞면 → autoSec 후 뒤집기 → autoSec 후 다음 카드. 타이밍 바도 같은 페이즈 길이로 진행.
+function armCardTimers() {
+  clearCardTimers();
+  const fill = document.getElementById("tbarFill");
+  if (fill) { fill.style.transition = "none"; fill.style.width = "0"; }
+  if (!autoSec || autoPaused) return;
+  cardTimers.push(setTimeout(() => { flipped ? cardNext() : flipCard(); }, autoSec * 1000));
+  if (fill) {
+    void fill.offsetWidth;
+    fill.style.transition = `width ${autoSec}s linear`;
+    fill.style.width = "100%";
+  }
+}
+function toggleAutoPause() {
+  if (currentView !== "cards" || !autoSec || !deck.length || deckIdx >= deck.length) return;
+  autoPaused = !autoPaused;
+  if (autoPaused) {
+    clearCardTimers();
+    const fill = document.getElementById("tbarFill");
+    if (fill) { const wpx = getComputedStyle(fill).width; fill.style.transition = "none"; fill.style.width = wpx; }
+  } else armCardTimers();
+  const badge = document.getElementById("pauseState");
+  if (badge) badge.textContent = autoPaused ? "⏸ 일시정지 — 스페이스로 재개" : "";
+  const pb = document.getElementById("pauseBtn");
+  if (pb) pb.innerHTML = (autoPaused ? "▶️ 재개" : "⏸ 일시정지") + ` <small>${keyLabel(KEYS.pause)}</small>`;
+}
+function cardPrev() {
+  if (currentView !== "cards" || deckIdx <= 0) return;
+  clearCardTimers();
+  deckIdx--; flipped = false;
+  renderCard();
+}
+document.addEventListener("keydown", (e) => {
+  if (currentView !== "cards" || !deck.length || deckIdx >= deck.length) return;
+  const code = e.code.replace(/^Numpad(\d)$/, "Digit$1");
+  const act = Object.keys(KEYS).find(a => KEYS[a] === code) ||
+    ({ Space: "pause", ArrowRight: "next", ArrowLeft: "prev" })[code];
+  if (!act) return;
+  e.preventDefault();
+  if (act === "pause") autoSec ? toggleAutoPause() : flipCard();
+  else if (act === "flip") flipCard();
+  else if (act === "next") cardNext();
+  else if (act === "prev") cardPrev();
+  else if (act === "speak") sayAr(deck[deckIdx].id, deck[deckIdx].ar);
+  else if (act === "star") toggleStar(deck[deckIdx].id);
+  else if (act === "dunno") cardMark(false);
+  else if (act === "know") cardMark(true);
+});
+views.cards = (mode) => {
+  cardsMode = mode;
+  const wrongSet = getSet(todayKey());
+  if (mode === "today") {
+    // 웜업(학습중 단어 최대 10) 먼저, 그다음 새 단어 최대 7개. 아는 단어는 제외.
+    const stats = getStats();
+    const pool = applyFilter(VOCAB);
+    const learning = shuffle(pool.filter(w => statusOf(w.id, stats) === "learning")).slice(0, 10);
+    const fresh = shuffle(pool.filter(w => statusOf(w.id, stats) === "new")).slice(0, 7);
+    deck = [...learning, ...fresh];
+  } else {
+    deck = mode === "wrong" ? VOCAB.filter(w => wrongSet.has(w.id))
+      : mode === "starred" ? shuffle(VOCAB.filter(w => getSet("starred").has(w.id)))
+      : shuffle(applyFilter(VOCAB));
+  }
+  deckIdx = 0; flipped = false; autoPaused = false;
+  if (!deck.length) {
+    $("#main").innerHTML = `
+      <div style="margin-bottom:12px">${cardFilterBar()}</div>
+      <p style="text-align:center;padding:40px">조건에 맞는 단어가 없습니다 — 필터를 조정해보세요</p>`;
+    return;
+  }
+  renderCard();
+};
+function cardFilterBar() {
+  const m = cardsMode === undefined ? "undefined" : `'${cardsMode}'`;
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
+    ${["", "명사", "형용사", "동사", "기타"].map(p => wfChip(p || "전체", wordFilter.pos === p, `setWF('pos','${p}','cards',${m})`)).join("")}
+    <span style="width:8px"></span>
+    ${wfChip("⭐ 안외워짐만", wordFilter.starOnly, `setWF('starOnly',${!wordFilter.starOnly},'cards',${m})`)}
+    ${wfChip("🏆 아는 단어 제외", wordFilter.skipKnown, `setWF('skipKnown',${!wordFilter.skipKnown},'cards',${m})`)}
+  </div>`;
+}
+function toggleStar(id) {
+  const s = getSet("starred");
+  s.has(id) ? s.delete(id) : s.add(id);
+  saveSet("starred", s);
+  const btn = document.getElementById("starBtn");
+  if (btn) btn.textContent = s.has(id) ? "⭐ 체크됨" : "☆ 안 외워짐";
+}
+function renderCard() {
+  clearCardTimers();
+  const w = deck[deckIdx];
+  markSeen(w.id);
+  const genderKo = { m: "남성", f: "여성", pair: "남/여 쌍" }[w.gender] || "";
+  const back = `
+    <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
+    <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
+    ${w.fem ? `<div class="fem-line">여성형: <span class="arabic">${w.fem}</span> ${w.femRoman}</div>` : ""}
+    ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${w.ex}</span></div>` : ""}
+    ${w.note ? `<div class="note-line">💡 ${w.note}</div>` : ""}`;
+  $("#main").innerHTML = `
+    ${cardFilterBar()}
+    <div class="score" style="margin-top:8px">${deckIdx + 1} / ${deck.length}</div>
+    <div class="auto-bar">
+      ⏱ 자동 넘김
+      <select onchange="setAutoSec(this.value)">
+        ${[["0", "끄기"], ["3", "3초"], ["5", "5초"], ["8", "8초"]].map(([v, l]) => `<option value="${v}" ${+v === autoSec ? "selected" : ""}>${l}</option>`).join("")}
+      </select>
+      <button onclick="toggleImg()" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid ${hideImg ? "var(--accent)" : "var(--line)"};background:${hideImg ? "var(--accent)" : "var(--card)"};color:${hideImg ? "#fff" : "var(--ink)"}">${hideImg ? "🚫 이미지 꺼짐" : "🖼 이미지 켜짐"}</button>
+      <span id="pauseState" style="color:var(--wrong);font-weight:700">${autoPaused ? "⏸ 일시정지 — 스페이스로 재개" : ""}</span>
+    </div>
+    <div class="card-stage" onclick="flipCard()">
+      <div class="tbar" style="display:${autoSec ? "block" : "none"}"><div class="tbar-fill" id="tbarFill"></div></div>
+      ${hideImg ? "" : PHOTOS.has(w.id) ? `<div class="card-emoji"><img class="card-photo" src="images/${w.id}.webp" alt=""></div>` : w.img ? `<div class="card-emoji">${w.img}</div>` : ""}
+      <div class="arabic">${w.ar}</div>
+      <div id="cardBack" style="display:${flipped ? "block" : "none"}">${back}</div>
+    </div>
+    <div class="hint">카드 탭 = 뒤집기 · 단축키: ${keyLabel(KEYS.prev)} 이전 / ${keyLabel(KEYS.pause)} ${autoSec ? "일시정지·재개" : "뒤집기"} / ${keyLabel(KEYS.next)} 다음 · <a href="#" onclick="event.preventDefault();go('keys')" style="color:var(--accent)">단축키 변경</a></div>
+    <div class="controls">
+      <button onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">🔊 발음 <small>${keyLabel(KEYS.speak)}</small></button>
+      <button id="flipBtn" onclick="flipCard()">${flipped ? "🙈 내용닫기" : "👁 내용보기"} <small>${keyLabel(KEYS.flip)}</small></button>
+      <button id="starBtn" onclick="toggleStar('${w.id}')">${getSet("starred").has(w.id) ? "⭐ 체크됨" : "☆ 안 외워짐"} <small>${keyLabel(KEYS.star)}</small></button>
+      <button onclick="cardMark(false)" style="color:var(--wrong)">❌ 몰라요 <small>${keyLabel(KEYS.dunno)}</small></button>
+      <button class="primary" onclick="cardMark(true)">✅ 알아요 <small>${keyLabel(KEYS.know)}</small></button>
+    </div>
+    <div class="controls">
+      <button onclick="cardPrev()" ${deckIdx === 0 ? "disabled style='opacity:.4'" : ""}>← 이전 <small>${keyLabel(KEYS.prev)}</small></button>
+      ${autoSec ? `<button id="pauseBtn" onclick="toggleAutoPause()">${autoPaused ? "▶️ 재개" : "⏸ 일시정지"} <small>${keyLabel(KEYS.pause)}</small></button>` : ""}
+      <button onclick="cardNext()">다음 → <small>${keyLabel(KEYS.next)}</small></button>
+    </div>`;
+  armCardTimers();
+}
+function setAutoSec(v) { autoSec = +v; renderCard(); }
+function flipCard() {
+  flipped = !flipped;
+  $("#cardBack").style.display = flipped ? "block" : "none";
+  const fb = document.getElementById("flipBtn");
+  if (fb) fb.innerHTML = (flipped ? "🙈 내용닫기" : "👁 내용보기") + ` <small>${keyLabel(KEYS.flip)}</small>`;
+  armCardTimers();
+}
+function cardMark(known) {
+  const w = deck[deckIdx];
+  known ? clearWrong(w.id) : markWrong(w.id);
+  bump(w.id, known);
+  cardNext();
+}
+function cardNext() {
+  clearCardTimers();
+  deckIdx++;
+  flipped = false;
+  if (deckIdx >= deck.length) {
+    const wrong = getSet(todayKey()).size;
+    $("#main").innerHTML = `
+      <div class="card-stage" style="cursor:default">
+        <div class="ko-big" style="font-size:28px">한 바퀴 완료 🎉</div>
+        <div class="back-line">오늘 틀린 단어: <b>${wrong}</b>개</div>
+      </div>
+      <div class="controls">
+        ${wrong ? `<button onclick="go('cards','wrong')" style="color:var(--wrong)">틀린 것만 다시</button>` : ""}
+        <button class="primary" onclick="go('cards')">처음부터 다시</button>
+        <button onclick="go('home')">홈으로</button>
+      </div>`;
+    return;
+  }
+  renderCard();
+}
+
+// ── 복습 퀴즈 (5모드)
+let quizState = null;
+views.quiz = () => {
+  $("#main").innerHTML = `
+    <div class="menu">
+      <button onclick="startQuiz('ar2ko')">🔤 아랍어 → 뜻</button>
+      <button onclick="startQuiz('ko2ar')">🇰🇷 뜻 → 아랍어</button>
+      <button onclick="startQuiz('gender')">♀♂ 남성/여성 맞히기</button>
+      <button onclick="startQuiz('definite')">📖 한정/비한정 구분</button>
+      <button onclick="startQuiz('hal')">❓ هَلْ 의문문 만들기</button>
+      <button onclick="startQuiz('sent2ko')">📜 문장 → 해석 맞추기</button>
+      <button class="wide" onclick="startQuiz('build')">🧩 해석 → 문장 만들기 <small>단어 타일을 순서대로 탭</small></button>
+    </div>`;
+};
+function startQuiz(mode) {
+  let items;
+  if (mode === "gender") items = shuffle(VOCAB.filter(w => (w.gender === "m" || w.gender === "f") && ["명사", "집합명사"].includes(w.pos))).slice(0, 12);
+  else if (mode === "definite") items = shuffle(PATTERNS.flatMap(p => p.forms.map(f => ({ ...f, set: p })))).slice(0, 10);
+  else if (mode === "hal") items = shuffle([...HAL_ITEMS]);
+  else if (mode === "sent2ko") items = shuffle([...EXAMPLES]).slice(0, 10);
+  else if (mode === "build") items = shuffle(EXAMPLES.filter(e => e.ar.split(" ").length >= 2)).slice(0, 8);
+  else items = shuffle(VOCAB.filter(w => w.pos !== "이름")).slice(0, 12);
+  quizState = { mode, items, idx: 0, right: 0 };
+  renderQuiz();
+}
+function renderQuiz() {
+  const { mode, items, idx, right } = quizState;
+  if (idx >= items.length) {
+    $("#main").innerHTML = `
+      <div class="quiz-q"><div class="ko-big">결과: ${right} / ${items.length}</div></div>
+      <div class="controls">
+        <button class="primary" onclick="startQuiz('${mode}')">같은 퀴즈 다시</button>
+        <button onclick="go('quiz')">다른 퀴즈</button>
+        <button onclick="go('home')">홈으로</button>
+      </div>`;
+    return;
+  }
+  if (mode === "build") { renderBuild(); return; }
+  const it = items[idx];
+  let qHtml = "", choices = [], correct, why = "";
+
+  if (mode === "sent2ko") {
+    qHtml = `<div class="prompt">이 문장의 해석은?</div><div class="arabic" style="font-size:44px">${it.ar}</div>`;
+    correct = it.ko;
+    choices = shuffle([it.ko, ...shuffle(EXAMPLES.filter(e => e.ar !== it.ar)).slice(0, 3).map(e => e.ko)]);
+    why = it.roman;
+  } else if (mode === "ar2ko") {
+    qHtml = `<div class="prompt">이 단어의 뜻은?</div><div class="arabic">${it.ar}</div>`;
+    correct = it.ko;
+    choices = shuffle([it.ko, ...shuffle(VOCAB.filter(w => w.id !== it.id && w.pos !== "이름")).slice(0, 3).map(w => w.ko)]);
+  } else if (mode === "ko2ar") {
+    qHtml = `<div class="prompt">아랍어로 고르세요</div><div class="ko-big">${it.ko}</div>`;
+    correct = it.ar;
+    choices = shuffle([it.ar, ...shuffle(VOCAB.filter(w => w.id !== it.id)).slice(0, 3).map(w => w.ar)]);
+    choices = choices.map(c => `<span class="arabic">${c}</span>`);
+    correct = `<span class="arabic">${correct}</span>`;
+  } else if (mode === "gender") {
+    qHtml = `<div class="prompt">이 명사의 성은? (${it.ko})</div><div class="arabic">${it.ar}</div>`;
+    correct = it.gender === "f" ? "여성" : "남성";
+    choices = ["남성", "여성"];
+    why = it.note || (it.gender === "f" ? "여성명사" : "남성명사");
+  } else if (mode === "definite") {
+    qHtml = `<div class="prompt">이 표현의 뜻은?</div><div class="arabic">${it.ar}</div><div style="font-size:13px;color:var(--sub);margin-top:8px">${it.roman}</div>`;
+    correct = it.ko;
+    choices = shuffle(it.set.forms.map(f => f.ko));
+    why = it.type;
+  } else if (mode === "hal") {
+    qHtml = `<div class="prompt">هَلْ 의문문으로 만드세요</div><div class="arabic" style="font-size:44px">${it.plain}</div><div style="font-size:15px;margin-top:8px">${it.plainKo}</div>`;
+    correct = `<span class="arabic">${it.q}</span>`;
+    const others = shuffle(HAL_ITEMS.filter(h => h.q !== it.q)).slice(0, 2).map(h => `<span class="arabic">${h.q}</span>`);
+    choices = shuffle([correct, ...others]);
+    why = `${it.qRoman} — ${it.qKo}`;
+  }
+
+  $("#main").innerHTML = `
+    <div class="score">${idx + 1} / ${items.length} · 정답 ${right}</div>
+    <div class="quiz-q">${qHtml}</div>
+    <div class="choices">${choices.map((c, i) => `<button class="choice" data-i="${i}">${c}</button>`).join("")}</div>
+    <div class="feedback" id="fb"></div>`;
+  document.querySelectorAll(".choice").forEach((btn, i) => {
+    btn.onclick = () => answerQuiz(choices[i] === correct || choices[i].includes && choices[i] === correct, btn, correct, why, it);
+  });
+  function answerQuiz(ok, btn, correctVal, whyText, item) {
+    document.querySelectorAll(".choice").forEach(b => {
+      b.onclick = null;
+      if (b.innerHTML === correctVal || b.textContent === correctVal) b.classList.add("right");
+    });
+    if (ok) { quizState.right++; btn.classList.add("right"); }
+    else {
+      btn.classList.add("wrong");
+      if (item.id) markWrong(item.id);
+    }
+    if (item.id) bump(item.id, ok);
+    $("#fb").innerHTML = `${ok ? "⭕ 정답!" : "❌ 오답"} ${whyText ? `<div class="why">💡 ${whyText}</div>` : ""}`;
+    setTimeout(() => { quizState.idx++; renderQuiz(); }, whyText ? 1900 : 1100);
+  }
+}
+
+// 해석 → 문장 조립 (단어 타일)
+function renderBuild() {
+  const { items, idx, right } = quizState;
+  const it = items[idx];
+  const words = it.ar.split(" ");
+  const tiles = shuffle(words.map((w, i) => ({ w, i })));
+  const picked = [];
+  let done = false;
+  $("#main").innerHTML = `
+    <div class="score">${idx + 1} / ${items.length} · 정답 ${right}</div>
+    <div class="quiz-q">
+      <div class="prompt">이 해석에 맞게 단어를 순서대로 탭하세요</div>
+      <div class="ko-big">${it.ko}</div>
+      <div class="assembled arabic" id="asm"></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="controls"><button id="undoBtn">↩️ 하나 지우기</button></div>
+    <div class="feedback" id="fb"></div>`;
+  const asm = $("#asm"), tilesEl = $("#tiles"), fb = $("#fb");
+  function draw() {
+    asm.textContent = picked.map(p => p.w).join(" ");
+    tilesEl.innerHTML = "";
+    tiles.forEach(t => {
+      const b = document.createElement("button");
+      b.className = "tile arabic";
+      b.textContent = t.w;
+      b.disabled = done || picked.includes(t);
+      b.onclick = () => { picked.push(t); draw(); check(); };
+      tilesEl.appendChild(b);
+    });
+  }
+  function check() {
+    if (picked.length < words.length) return;
+    done = true;
+    draw();
+    const ok = picked.map(p => p.w).join(" ") === it.ar;
+    if (ok) quizState.right++;
+    fb.innerHTML = `${ok ? "⭕ 정답!" : `❌ 정답: <div class="arabic" style="font-size:34px">${it.ar}</div>`}<div class="why">${it.roman}</div>`;
+    setTimeout(() => { quizState.idx++; renderQuiz(); }, ok ? 1400 : 2800);
+  }
+  $("#undoBtn").onclick = () => { if (!done && picked.length) { picked.pop(); draw(); } };
+  draw();
+}
+
+// ── 문법 패턴 학습
+views.patterns = () => {
+  $("#main").innerHTML = `
+    <div class="rule-box">
+      <b>형용사 3패턴</b> — ① 비한정+비한정 = "한 큰 집" ② 한정+한정 = "그 큰 집" ③ 한정 주부+비한정 술부 = "그 집은 크다" (문장!)<br>
+      <b>규칙</b> — 주부는 한정, 술부는 비한정 · 형용사는 성을 맞춘다 · فِي 뒤에는 소유격 · هَلْ + 평서문 = 의문문<br>
+      <b>격변화 (8/9)</b> — 주격 ـُ / 목적격 ـَ / 소유격·전치사 뒤 ـِ<br>
+      <b>태양문자 (8/9)</b> — ال 뒤에 태양문자가 오면 ل이 그 자음으로 동화된다: اَلشَّمْسُ = "앗샴수" (알샴수 ✗)<br>
+      <b>과거동사 여성형 (8/9)</b> — 주어가 여성이면 동사 끝에 تْ: شَرِبَ → شَرِبَتْ
+    </div>
+    ${PATTERNS.map(p => `
+      <div class="pattern-set">
+        <h3>${p.noun} + ${p.adj}${p.femNote ? ` <span style="color:var(--accent)">· ${p.femNote}</span>` : ""}</h3>
+        ${p.forms.map(f => `
+          <div class="pattern-row">
+            <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
+            <div class="arabic" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${f.ar}</div>
+          </div>`).join("")}
+      </div>`).join("")}
+    <div class="pattern-set">
+      <h3>هَلْ 의문문 — 평서문 앞에 هَلْ 를 붙인다</h3>
+      ${HAL_ITEMS.map(h => `
+        <div class="pattern-row">
+          <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}${h.yes ? `<br>답: ${h.yesRoman || ""}` : ""}</span></div>
+          <div class="arabic" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${h.q}</div>
+        </div>`).join("")}
+    </div>
+    <div class="controls"><button class="primary" onclick="startQuiz('definite')">이 패턴으로 퀴즈 풀기</button></div>`;
+};
+
+// ── 운전 모드: 한국어 뜻 → 아랍어(2회) → romanization
+let driveTimer = null, drivePlaying = false, driveList = [], driveIdx = 0, driveRate = 0.85;
+const DRIVE_SPEEDS = [["0.5", "🐢 아주 느리게"], ["0.65", "🚶 느리게"], ["0.85", "🚗 보통"], ["1.1", "🏎 빠르게"]];
+views.drive = () => {
+  $("#main").innerHTML = `
+    <div class="drive-stage" id="driveStage">
+      <div class="step-label">운전 모드</div>
+      <div class="main-text">재생을 누르세요</div>
+      <div class="sub-text">한국어 뜻 → 아랍어 2회 → 발음 표기 순서로 반복합니다</div>
+    </div>
+    <div class="drive-ctl">
+      <button class="bigbtn primary" id="drivePlayBtn" onclick="driveToggle()">▶️ 재생</button>
+      <button class="bigbtn" onclick="driveSetList('vocab')">단어 10개 랜덤</button>
+      <button class="bigbtn" onclick="driveSetList('phrases')">회화 표현 루프</button>
+    </div>
+    <div class="drive-ctl" id="speedRow">
+      ${DRIVE_SPEEDS.map(([v, l]) => `<button class="bigbtn toggle ${+v === driveRate ? "on" : ""}" data-rate="${v}" onclick="driveSetRate(${v})">${l}</button>`).join("")}
+    </div>
+    <div class="hint">화면을 보지 않아도 음성으로 반복됩니다 (TTS 지원 브라우저)</div>`;
+  driveSetList("vocab", true);
+};
+function driveSetRate(r) {
+  driveRate = r;
+  document.querySelectorAll("#speedRow .toggle").forEach(b => b.classList.toggle("on", +b.dataset.rate === r));
+}
+function driveSetList(kind, silent) {
+  driveStop();
+  driveList = kind === "phrases"
+    ? shuffle([...PHRASES])
+    : shuffle(VOCAB.filter(w => w.pos !== "이름")).slice(0, 10);
+  driveIdx = 0;
+  if (!silent) driveToggle(true);
+}
+function driveToggle(forcePlay) {
+  if (drivePlaying && !forcePlay) { driveStop(); return; }
+  drivePlaying = true;
+  $("#drivePlayBtn") && ($("#drivePlayBtn").textContent = "⏸ 정지");
+  driveStep();
+}
+function driveStop() {
+  drivePlaying = false;
+  clearTimeout(driveTimer);
+  stopSpeak();
+  const btn = document.getElementById("drivePlayBtn");
+  if (btn) btn.textContent = "▶️ 재생";
+}
+function driveShow(label, main, sub, isArabic) {
+  const st = document.getElementById("driveStage");
+  if (!st) return;
+  st.innerHTML = `
+    <div class="step-label">${label} · ${driveIdx + 1}/${driveList.length}</div>
+    <div class="main-text ${isArabic ? "arabic" : ""}">${main}</div>
+    ${sub ? `<div class="sub-text">${sub}</div>` : ""}`;
+}
+function driveStep() {
+  if (!drivePlaying || !driveList.length) return;
+  const it = driveList[driveIdx % driveList.length];
+  const rate = driveRate;
+  const ko = it.ko;
+  const next = (fn, ms) => { driveTimer = setTimeout(() => drivePlaying && fn(), ms); };
+
+  driveShow("한국어 뜻", ko, "", false);
+  sayKo(it.id, ko, () => next(step2, 500));
+  function step2() {
+    driveShow("아랍어", it.ar, "", true);
+    sayAr(it.id, it.ar, rate, () => next(step3, 600));
+  }
+  function step3() {
+    driveShow("아랍어 한 번 더", it.ar, it.koPron || "", true);
+    sayAr(it.id, it.ar, rate, () => next(step4, 500));
+  }
+  function step4() {
+    driveShow("발음", it.roman, it.koPron || "", false);
+    next(() => { driveIdx++; driveStep(); }, Math.round(1600 / driveRate));
+  }
+}
+
+// ── 단어장 목록 (전체 스크롤 + 카테고리 필터)
+views.list = (filter) => {
+  const order = ["명사", "형용사", "분사", "집합명사", "대명사", "지시어", "전치사", "부사", "의문사", "답변", "동사", "지명", "구", "표현", "문법용어", "이름"];
+  const starSet = getSet("starred"), stats = getStats();
+  const pool = VOCAB.filter(w =>
+    (!wordFilter.starOnly || starSet.has(w.id)) &&
+    (!wordFilter.skipKnown || statusOf(w.id, stats) !== "known"));
+  const all = order.filter(p => pool.some(w => w.pos === p));
+  const groups = filter ? all.filter(p => p === filter) : all;
+  const fArg = filter ? `'${filter}'` : "undefined";
+  const chip = (label, val) => `<button onclick="go('list'${val ? `,'${val}'` : ""})" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid ${filter === val || (!filter && !val) ? "var(--accent)" : "var(--line)"};background:${filter === val || (!filter && !val) ? "var(--accent)" : "var(--card)"};color:${filter === val || (!filter && !val) ? "#fff" : "var(--ink)"}">${label}</button>`;
+  $("#main").innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;position:sticky;top:57px;background:var(--bg);padding:8px 0;z-index:4">
+      ${chip("전체", "")}${all.map(p => chip(`${p} ${pool.filter(w => w.pos === p).length}`, p)).join("")}
+      <span style="width:8px"></span>
+      ${wfChip("⭐ 안외워짐만", wordFilter.starOnly, `setWF('starOnly',${!wordFilter.starOnly},'list',${fArg})`)}
+      ${wfChip("🏆 아는 단어 제외", wordFilter.skipKnown, `setWF('skipKnown',${!wordFilter.skipKnown},'list',${fArg})`)}
+    </div>` + (pool.length ? "" : `<p style="text-align:center;padding:40px">조건에 맞는 단어가 없습니다</p>`) + groups.map(p => `
+    <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">${p} (${pool.filter(w => w.pos === p).length})</h2>
+    ${pool.filter(w => w.pos === p).map(w => `
+      <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')" style="overflow:hidden">
+        ${PHOTOS.has(w.id) ? `<img class="list-thumb" src="images/${w.id}.webp" alt="" loading="lazy">` : ""}
+        <div class="arabic">${w.ar}${w.fem ? ` / ${w.fem}` : ""}</div>
+        <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
+        <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
+        ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
+      </div>`).join("")}`).join("") +
+    `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;
+};
+
+// ── 설정 (보이스 · 메뉴 순서 · 단축키)
+views.keys = () => {
+  const v = getVoice();
+  $("#main").innerHTML = `
+    <div class="pattern-set">
+      <h3>🔊 발음 목소리 — 누르면 샘플이 재생됩니다</h3>
+      <div style="display:grid;gap:8px">
+        ${VOICES.map(x => `<button data-voice="${x.id}" class="choice" style="text-align:left;${x.id === v ? "background:var(--accent);color:#fff;border-color:var(--accent)" : ""}" onclick="setVoice('${x.id}')">${x.label}</button>`).join("")}
+      </div>
+    </div>
+    <div class="pattern-set">
+      <h3>📋 메뉴 순서 — 화살표로 옮기세요</h3>
+      ${menuOrder().map((id, i, arr) => `
+        <div class="pattern-row" style="padding:7px 0">
+          <span style="font-size:15px">${MENU_DEFS[id].html.split("<small>")[0]}</span>
+          <span style="display:flex;gap:6px">
+            <button class="choice" style="padding:5px 12px" ${i === 0 ? "disabled" : ""} onclick="moveMenu('${id}',-1)">↑</button>
+            <button class="choice" style="padding:5px 12px" ${i === arr.length - 1 ? "disabled" : ""} onclick="moveMenu('${id}',1)">↓</button>
+          </span>
+        </div>`).join("")}
+    </div>
+    <div class="rule-box">⌨️ 단어 카드 단축키 — [변경]을 누른 뒤 원하는 키를 누르세요. (스페이스·←·→는 항상 고정으로도 동작)</div>
+    ${Object.keys(DEFAULT_KEYS).map(a => `
+      <div class="phrase-card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 18px">
+        <span style="font-size:16px">${KEY_NAMES[a]}</span>
+        <span style="display:flex;gap:10px;align-items:center">
+          <b style="font-size:18px;min-width:60px;text-align:center;padding:6px 14px;border:1.5px solid var(--accent);border-radius:8px;background:var(--accent-soft)">${keyLabel(KEYS[a])}</b>
+          <button class="choice" style="padding:8px 16px;font-size:14px" onclick="rebind('${a}')">변경</button>
+        </span>
+      </div>`).join("")}
+    <div class="controls"><button onclick="resetKeys()">기본값으로 복원</button></div>
+    <div class="hint" id="rebindHint"></div>`;
+};
+function rebind(action) {
+  $("#rebindHint").textContent = `[${KEY_NAMES[action]}] 새 키를 누르세요 (ESC 취소)`;
+  const h = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const code = e.code.replace(/^Numpad(\d)$/, "Digit$1");
+    if (code === "Escape") { views.keys(); return; }
+    const taken = Object.keys(KEYS).find(a => a !== action && KEYS[a] === code);
+    if (taken) {
+      $("#rebindHint").textContent = `"${keyLabel(code)}" 키는 이미 [${KEY_NAMES[taken]}]에 있습니다. 다른 키를 누르세요 (ESC 취소)`;
+      document.addEventListener("keydown", h, { once: true, capture: true });
+      return;
+    }
+    KEYS[action] = code; saveKeys(); views.keys();
+    $("#rebindHint").textContent = `✅ [${KEY_NAMES[action]}] → ${keyLabel(code)} 저장됨`;
+  };
+  document.addEventListener("keydown", h, { once: true, capture: true });
+}
+function resetKeys() { KEYS = { ...DEFAULT_KEYS }; saveKeys(); views.keys(); }
+
+// ── 단어 직접 추가
+views.add = (msg) => {
+  const custom = JSON.parse(localStorage.getItem("customVocab") || "[]");
+  const inp = "font-family:inherit;font-size:16px;padding:12px;border:1px solid var(--line);border-radius:10px;width:100%";
+  $("#main").innerHTML = `
+    <div class="rule-box">직접 수집한 단어를 등록합니다. 카드·퀴즈·단어장·오늘의 학습에 바로 포함됩니다.</div>
+    <div class="pattern-set" style="display:grid;gap:10px">
+      <input id="f-ar" placeholder="아랍어 (모음표시 포함) *" style="${inp};font-size:26px;direction:rtl;font-family:'SF Arabic','Geeza Pro',sans-serif">
+      <input id="f-ko" placeholder="한국어 뜻 *" style="${inp}">
+      <input id="f-roman" placeholder="발음 표기 (예: sayyaaratun)" style="${inp}">
+      <input id="f-en" placeholder="영어 뜻 (선택)" style="${inp}">
+      <div style="display:flex;gap:8px">
+        <select id="f-pos" style="${inp}">${["명사", "형용사", "동사", "부사", "전치사", "구", "표현"].map(p => `<option>${p}</option>`).join("")}</select>
+        <select id="f-gender" style="${inp}"><option value="">성별 모름/해당없음</option><option value="m">남성</option><option value="f">여성</option></select>
+      </div>
+      <input id="f-note" placeholder="메모 (선택)" style="${inp}">
+      <button class="bigbtn primary" onclick="addWord()">➕ 추가하기</button>
+      ${msg ? `<div style="color:var(--accent);font-weight:700">${msg}</div>` : ""}
+    </div>
+    ${custom.length ? `
+      <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">내가 추가한 단어 (${custom.length})</h2>
+      ${custom.map(w => `
+        <div class="phrase-card" style="display:flex;justify-content:space-between;align-items:center">
+          <div><span class="arabic" style="font-size:30px">${w.ar}</span> <b>${w.ko}</b> <span style="color:var(--sub);font-size:13px">${w.roman || ""}</span></div>
+          <button class="choice" style="padding:6px 12px;font-size:13px;color:var(--wrong)" onclick="delWord('${w.id}')">삭제</button>
+        </div>`).join("")}` : ""}`;
+};
+function addWord() {
+  const v = (id) => document.getElementById(id).value.trim();
+  const ar = v("f-ar"), ko = v("f-ko");
+  if (!ar || !ko) { views.add("⚠️ 아랍어와 한국어 뜻은 필수입니다"); return; }
+  const w = { id: "u" + Date.now(), ar, ko, roman: v("f-roman"), en: v("f-en"), pos: document.getElementById("f-pos").value, gender: document.getElementById("f-gender").value || null, note: v("f-note"), custom: true, date: new Date().toISOString().slice(0, 10) };
+  const custom = JSON.parse(localStorage.getItem("customVocab") || "[]");
+  custom.push(w);
+  localStorage.setItem("customVocab", JSON.stringify(custom));
+  VOCAB.push(w);
+  views.add(`✅ "${ko}" 추가됨 (총 ${VOCAB.length}단어)`);
+}
+function delWord(id) {
+  const custom = JSON.parse(localStorage.getItem("customVocab") || "[]").filter(w => w.id !== id);
+  localStorage.setItem("customVocab", JSON.stringify(custom));
+  const i = VOCAB.findIndex(w => w.id === id);
+  if (i >= 0) VOCAB.splice(i, 1);
+  views.add();
+}
+
+// ── 회화 표현 목록
+views.phrases = () => {
+  $("#main").innerHTML = PHRASES.map(p => `
+    <div class="phrase-card" onclick="sayAr('${p.id}','${p.ar.replace(/'/g, "\\'")}')">
+      <div class="arabic">${p.ar}</div>
+      <div class="kp">${p.koPron} <span style="font-weight:400;font-size:15px">— ${p.ko}</span></div>
+      <div class="rm">${p.roman}</div>
+      <div class="mn">${p.note}</div>
+    </div>`).join("") + `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;
+};
+
+go("home");
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# 수업 원본(녹취 SRT 등) — 공개 저장소에 올리지 않음
+sources/
+# 원본 PNG (webp만 배포)
+images/*.png
+.DS_Store
