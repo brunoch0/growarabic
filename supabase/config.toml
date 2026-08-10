@@ -1,0 +1,5 @@
+project_id = "growarabic"
+
+[functions.growarabic-ocr]
+# Auth is the in-function x-app-token check; no Supabase JWT needed from the static app.
+verify_jwt = false

@@ -331,9 +331,11 @@ const MENU_DEFS = {
   settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
 };
 const DEFAULT_MENU = ["cards", "list", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
+// 단어 추가는 아직 개발 중 — 로컬(file://)에서만 노출, 라이브에서는 숨김
+const DEV = location.protocol === "file:" || location.hostname === "localhost";
 function menuOrder() {
   const saved = JSON.parse(localStorage.getItem("menuOrder") || "[]").filter(id => MENU_DEFS[id]);
-  return [...saved, ...DEFAULT_MENU.filter(id => !saved.includes(id))];
+  return [...saved, ...DEFAULT_MENU.filter(id => !saved.includes(id))].filter(id => DEV || id !== "add");
 }
 function moveMenu(id, dir) {
   const order = menuOrder();
@@ -872,12 +874,81 @@ function rebind(action) {
 function resetKeys() { KEYS = { ...DEFAULT_KEYS }; saveKeys(); views.keys(); }
 
 // ── 단어 직접 추가
+const OCR_URL = "https://ptbwpeeelgsjktoanvlj.supabase.co/functions/v1/growarabic-ocr";
+let OCR_RESULTS = null, OCR_BUSY = false;
+async function ocrPhoto(file) {
+  if (!file || OCR_BUSY) return;
+  OCR_BUSY = true; OCR_RESULTS = null; views.add();
+  try {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("이미지를 읽을 수 없습니다")); img.src = url; });
+    const scale = Math.min(1, 1280 / Math.max(img.width, img.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(url);
+    const b64 = c.toDataURL("image/jpeg", 0.85).split(",")[1];
+    const r = await fetch(OCR_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-app-token": "growarabic" },
+      body: JSON.stringify({ image: b64, media_type: "image/jpeg" }),
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) throw new Error(data.error || `서버 오류 (${r.status})`);
+    OCR_RESULTS = (data.words || []).map(w => ({ ...w, added: false }));
+  } catch (e) { OCR_RESULTS = { error: String(e.message || e) }; }
+  OCR_BUSY = false; views.add();
+}
+function addOcrWord(i) {
+  const w = OCR_RESULTS[i];
+  if (!w || w.added) return;
+  const word = { id: "u" + Date.now() + "_" + i, ar: w.ar, ko: w.ko, roman: w.roman, en: w.en, pos: w.pos, gender: w.gender || null, note: w.note, custom: true, date: new Date().toISOString().slice(0, 10) };
+  const custom = JSON.parse(localStorage.getItem("customVocab") || "[]");
+  custom.push(word);
+  localStorage.setItem("customVocab", JSON.stringify(custom));
+  VOCAB.push(word);
+  w.added = true;
+  views.add();
+}
+function addAllOcr() { OCR_RESULTS.forEach((w, i) => { if (!w.added && !VOCAB.some(v => v.ar === w.ar)) addOcrWord(i); }); }
+function fillOcr(i) {
+  const w = OCR_RESULTS[i];
+  views.add();
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ""; };
+  set("f-ar", w.ar); set("f-ko", w.ko); set("f-roman", w.roman); set("f-en", w.en); set("f-pos", w.pos); set("f-gender", w.gender); set("f-note", w.note);
+}
+function ocrResultsHtml() {
+  if (OCR_BUSY) return `<div class="rule-box">📷 사진 분석 중… 10~30초 걸립니다</div>`;
+  if (!OCR_RESULTS) return "";
+  if (OCR_RESULTS.error) return `<div class="rule-box" style="color:var(--wrong)">⚠️ 사진 분석 실패: ${OCR_RESULTS.error}</div>`;
+  if (!OCR_RESULTS.length) return `<div class="rule-box">사진에서 아랍어 단어를 찾지 못했습니다</div>`;
+  const dup = (w) => !w.added && VOCAB.some(v => v.ar === w.ar);
+  return `
+    <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">📷 사진에서 찾은 단어 (${OCR_RESULTS.length})</h2>
+    ${OCR_RESULTS.map((w, i) => `
+      <div class="phrase-card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0" onclick="fillOcr(${i})">
+          <span class="arabic" style="font-size:28px">${w.ar}</span> <b>${w.ko}</b>
+          <span style="color:var(--sub);font-size:13px">${w.roman || ""} · ${w.pos}${w.gender ? " · " + (w.gender === "f" ? "여성" : "남성") : ""}</span>
+          ${w.note ? `<div style="color:var(--sub);font-size:13px">${w.note}</div>` : ""}
+        </div>
+        ${w.added ? `<span style="color:var(--accent);font-weight:700;flex-shrink:0">✅</span>`
+          : dup(w) ? `<span style="color:var(--sub);font-size:13px;flex-shrink:0">이미 있음</span>`
+          : `<button class="choice" style="padding:8px 14px;flex-shrink:0" onclick="addOcrWord(${i})">➕ 추가</button>`}
+      </div>`).join("")}
+    ${OCR_RESULTS.some((w, i) => !w.added && !dup(w)) ? `<button class="bigbtn primary" onclick="addAllOcr()">➕ 전부 추가하기</button>` : ""}
+    <div class="hint">단어를 탭하면 아래 폼에 채워져서 수정 후 추가할 수 있습니다</div>`;
+}
 views.add = (msg) => {
   const custom = JSON.parse(localStorage.getItem("customVocab") || "[]");
   const inp = "font-family:inherit;font-size:16px;padding:12px;border:1px solid var(--line);border-radius:10px;width:100%";
   $("#main").innerHTML = `
     <div class="rule-box">직접 수집한 단어를 등록합니다. 카드·퀴즈·단어장·오늘의 학습에 바로 포함됩니다.</div>
-    <div class="pattern-set" style="display:grid;gap:10px">
+    <input type="file" id="f-photo" accept="image/*" hidden onchange="ocrPhoto(this.files[0]); this.value=''">
+    <button class="bigbtn" style="margin-bottom:10px" ${OCR_BUSY ? "disabled" : ""} onclick="document.getElementById('f-photo').click()">📷 사진으로 단어 추출${OCR_BUSY ? " — 분석 중…" : ""}</button>
+    ${ocrResultsHtml()}
+    <div class="pattern-set" style="display:grid;gap:10px;margin-top:12px">
       <input id="f-ar" placeholder="아랍어 (모음표시 포함) *" style="${inp};font-size:26px;direction:rtl;font-family:'SF Arabic','Geeza Pro',sans-serif">
       <input id="f-ko" placeholder="한국어 뜻 *" style="${inp}">
       <input id="f-roman" placeholder="발음 표기 (예: sayyaaratun)" style="${inp}">
