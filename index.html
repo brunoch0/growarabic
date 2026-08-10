@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>아랍어 살롱 — Bruno 학습</title>
+<title>GrowArabic — 아랍어 학습</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   :root {
@@ -141,8 +141,10 @@
 </head>
 <body>
 <header>
-  <h1 onclick="go('home')">🕌 아랍어 살롱</h1>
+  <h1 onclick="go('home')">🕌 GrowArabic</h1>
   <span class="crumb" id="crumb"></span>
+  <button id="menuBtn" onclick="toggleMenu(event)" style="margin-left:auto;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;color:var(--ink)">☰</button>
+  <div id="dropMenu" style="display:none;position:absolute;top:52px;right:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:20;min-width:190px;overflow:hidden"></div>
 </header>
 <main id="main"></main>
 
@@ -261,11 +263,31 @@ let KEYS = { ...DEFAULT_KEYS, ...(savedKeymap.flip ? savedKeymap : {}) };
 const saveKeys = () => localStorage.setItem("keymap", JSON.stringify(KEYS));
 const keyLabel = (code) => ({ Space: "스페이스", ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Enter: "Enter" }[code] || code.replace(/^Key|^Digit|^Numpad/, ""));
 
+// ── 헤더 메뉴 (☰ 드롭다운)
+function toggleMenu(e) {
+  e && e.stopPropagation();
+  const dm = document.getElementById("dropMenu");
+  if (dm.style.display === "block") { dm.style.display = "none"; return; }
+  const item = (label, action) => `<div onclick="document.getElementById('dropMenu').style.display='none';${action}" style="padding:12px 16px;font-size:15px;cursor:pointer;border-bottom:1px solid var(--line)" onmouseover="this.style.background='var(--accent-soft)'" onmouseout="this.style.background=''">${label}</div>`;
+  dm.innerHTML =
+    item("🏠 홈", "go('home')") +
+    item("📅 오늘의 학습", "go('cards','today')") +
+    menuOrder().map(id => item(MENU_DEFS[id].html.split("<small>")[0].trim(), MENU_DEFS[id].action.replace(/"/g, "&quot;"))).join("");
+  dm.lastElementChild && (dm.lastElementChild.style.borderBottom = "none");
+  dm.style.display = "block";
+}
+document.addEventListener("click", (e) => {
+  const dm = document.getElementById("dropMenu");
+  if (dm && dm.style.display === "block" && !dm.contains(e.target)) dm.style.display = "none";
+});
+
 // ── 라우팅
 const views = {};
 let currentView = "";
 function go(name, arg) {
   currentView = name;
+  const dm = document.getElementById("dropMenu");
+  if (dm) dm.style.display = "none";
   stopSpeak(); driveStop();
   if (typeof clearCardTimers === "function") clearCardTimers();
   const labels = { home: "", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };

@@ -1,4 +1,4 @@
-# 아랍어 살롱 — Bruno 아랍어 기초 학습 앱
+# GrowArabic — 아랍어 기초 학습 앱 (https://brunoch0.github.io/growarabic/)
 
 `index.html`을 더블클릭해서 브라우저로 열면 끝. 서버·빌드·설치 불필요.
 
