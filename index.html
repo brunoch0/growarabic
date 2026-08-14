@@ -214,10 +214,10 @@ const VOICES = [
   { id: "soraya", label: "4번 · 여성 (Soraya)" },
 ];
 const getVoice = () => localStorage.getItem("voice") || "grady";
-function sayAr(id, text, rate = 0.85, onend) {
+function sayAr(id, text, rate = 0.85, onend, voiceOv) {
   stopSpeak();
   if (typeof AUDIO !== "undefined" && AUDIO.has(id)) {
-    const a = new Audio(`audio/${getVoice()}/${id}.mp3`);
+    const a = new Audio(`audio/${voiceOv || getVoice()}/${id}.mp3`);
     a.playbackRate = rate / 0.85;
     curAudio = a;
     if (onend) a.onended = () => onend();
@@ -817,6 +817,10 @@ views.list = (filter) => {
         <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
         ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}',0.85,null,'grady')">👨 남성 발음</button>
+          <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}',0.85,null,'yara')">👩 여성 발음</button>
+        </div>
       </div>`).join("")}`).join("") +
     `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;
 };
