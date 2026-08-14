@@ -476,6 +476,7 @@ function renderCard() {
   const w = deck[deckIdx];
   markSeen(w.id);
   const genderKo = { m: "남성", f: "여성", pair: "남/여 쌍" }[w.gender] || "";
+  const mediaHtml = PHOTOS.has(w.id) ? `<div class="card-emoji"><img class="card-photo" src="images/${w.id}.webp" alt=""></div>` : w.img ? `<div class="card-emoji">${w.img}</div>` : "";
   const back = `
     <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
     <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
@@ -496,12 +497,13 @@ function renderCard() {
     </div>
     <div class="card-stage" onclick="flipCard()">
       <div class="tbar" style="display:${autoSec ? "block" : "none"}"><div class="tbar-fill" id="tbarFill"></div></div>
+      ${hideImg ? "" : mediaHtml}
       ${cardDir === "ko2ar"
         ? `<div class="ko-big" style="font-size:40px;font-weight:800;padding:20px 0">${w.ko}</div>`
         : `<div class="arabic">${w.ar}</div>`}
       <div id="cardBack" style="display:${flipped ? "block" : "none"}">
         ${cardDir === "ko2ar" ? `<div class="arabic">${w.ar}</div>` : ""}
-        ${hideImg ? "" : PHOTOS.has(w.id) ? `<div class="card-emoji"><img class="card-photo" src="images/${w.id}.webp" alt=""></div>` : w.img ? `<div class="card-emoji">${w.img}</div>` : ""}
+        ${hideImg ? mediaHtml : ""}
         ${back}
       </div>
     </div>
