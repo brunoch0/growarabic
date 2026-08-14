@@ -577,11 +577,12 @@ function startQuiz(mode) {
   else if (mode === "sent2ko") items = shuffle([...EXAMPLES]).slice(0, 10);
   else if (mode === "build") items = shuffle(EXAMPLES.filter(e => e.ar.split(" ").length >= 2)).slice(0, 8);
   else items = shuffle(VOCAB.filter(w => w.pos !== "이름")).slice(0, 12);
-  quizState = { mode, items, idx: 0, right: 0 };
+  quizState = { mode, items, idx: 0, right: 0, wrongs: [] };
   renderQuiz();
 }
+function quizNext() { quizState.idx++; renderQuiz(); }
 function renderQuiz() {
-  const { mode, items, idx, right } = quizState;
+  const { mode, items, idx, right, wrongs } = quizState;
   if (idx >= items.length) {
     $("#main").innerHTML = `
       <div class="quiz-q"><div class="ko-big">결과: ${right} / ${items.length}</div></div>
@@ -589,7 +590,16 @@ function renderQuiz() {
         <button class="primary" onclick="startQuiz('${mode}')">같은 퀴즈 다시</button>
         <button onclick="go('quiz')">다른 퀴즈</button>
         <button onclick="go('home')">홈으로</button>
-      </div>`;
+      </div>
+      ${wrongs.length ? `
+        <h2 style="font-size:16px;color:var(--wrong);margin:22px 4px 8px">❌ 틀린 문제 다시 보기 (${wrongs.length})</h2>
+        ${wrongs.map(x => `
+          <div class="phrase-card" style="border-left:3px solid var(--wrong)">
+            ${x.q}
+            <div style="margin-top:8px;color:var(--wrong)">내 답: ${x.my}</div>
+            <div style="color:var(--accent);font-weight:700">정답: ${x.correct}</div>
+            ${x.why ? `<div class="mn">💡 ${x.why}</div>` : ""}
+          </div>`).join("")}` : ""}`;
     return;
   }
   if (mode === "build") { renderBuild(); return; }
@@ -646,10 +656,12 @@ function renderQuiz() {
     else {
       btn.classList.add("wrong");
       if (item.id) markWrong(item.id);
+      quizState.wrongs.push({ q: qHtml, my: btn.innerHTML, correct: correctVal, why: whyText });
     }
     if (item.id) bump(item.id, ok);
-    $("#fb").innerHTML = `${ok ? "⭕ 정답!" : "❌ 오답"} ${whyText ? `<div class="why">💡 ${whyText}</div>` : ""}`;
-    setTimeout(() => { quizState.idx++; renderQuiz(); }, whyText ? 1900 : 1100);
+    $("#fb").innerHTML = `${ok ? "⭕ 정답!" : "❌ 오답"} ${whyText ? `<div class="why">💡 ${whyText}</div>` : ""}
+      ${ok ? "" : `<div class="controls" style="margin-top:10px"><button class="primary" onclick="quizNext()">확인했어요, 다음 →</button></div>`}`;
+    if (ok) setTimeout(quizNext, whyText ? 1900 : 1100);
   }
 }
 
@@ -690,8 +702,15 @@ function renderBuild() {
     draw();
     const ok = picked.map(p => p.w).join(" ") === it.ar;
     if (ok) quizState.right++;
-    fb.innerHTML = `${ok ? "⭕ 정답!" : `❌ 정답: <div class="arabic" style="font-size:34px">${it.ar}</div>`}<div class="why">${it.roman}</div>`;
-    setTimeout(() => { quizState.idx++; renderQuiz(); }, ok ? 1400 : 2800);
+    else quizState.wrongs.push({
+      q: `<div class="ko-big" style="font-size:22px">${it.ko}</div>`,
+      my: `<span class="arabic">${picked.map(p => p.w).join(" ")}</span>`,
+      correct: `<span class="arabic">${it.ar}</span>`,
+      why: it.roman,
+    });
+    fb.innerHTML = `${ok ? "⭕ 정답!" : `❌ 정답: <div class="arabic" style="font-size:34px">${it.ar}</div>`}<div class="why">${it.roman}</div>
+      ${ok ? "" : `<div class="controls" style="margin-top:10px"><button class="primary" onclick="quizNext()">확인했어요, 다음 →</button></div>`}`;
+    if (ok) setTimeout(quizNext, 1400);
   }
   $("#undoBtn").onclick = () => { if (!done && picked.length) { picked.pop(); draw(); } };
   draw();
