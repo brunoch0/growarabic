@@ -370,6 +370,13 @@ function setWF(k, v, view, arg) {
 const wfChip = (label, active, onclick) =>
   `<button onclick="${onclick}" style="font-family:inherit;font-size:13px;padding:7px 12px;border-radius:18px;cursor:pointer;border:1px solid ${active ? "var(--accent)" : "var(--line)"};background:${active ? "var(--accent)" : "var(--card)"};color:${active ? "#fff" : "var(--ink)"}">${label}</button>`;
 let hideImg = localStorage.getItem("hideImg") === "1";
+let cardDir = localStorage.getItem("cardDir") || "ar2ko"; // ar2ko: 아랍어→뜻, ko2ar: 뜻→아랍어
+function toggleDir() {
+  cardDir = cardDir === "ar2ko" ? "ko2ar" : "ar2ko";
+  localStorage.setItem("cardDir", cardDir);
+  flipped = false;
+  renderCard();
+}
 function toggleImg() {
   hideImg = !hideImg;
   localStorage.setItem("hideImg", hideImg ? "1" : "0");
@@ -484,13 +491,19 @@ function renderCard() {
         ${[["0", "끄기"], ["3", "3초"], ["5", "5초"], ["8", "8초"]].map(([v, l]) => `<option value="${v}" ${+v === autoSec ? "selected" : ""}>${l}</option>`).join("")}
       </select>
       <button onclick="toggleImg()" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid ${hideImg ? "var(--accent)" : "var(--line)"};background:${hideImg ? "var(--accent)" : "var(--card)"};color:${hideImg ? "#fff" : "var(--ink)"}">${hideImg ? "🚫 이미지 꺼짐" : "🖼 이미지 켜짐"}</button>
+      <button onclick="toggleDir()" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid var(--accent);background:var(--card);color:var(--ink);font-weight:700">${cardDir === "ko2ar" ? "🔄 뜻 → 아랍어" : "🔄 아랍어 → 뜻"}</button>
       <span id="pauseState" style="color:var(--wrong);font-weight:700">${autoPaused ? "⏸ 일시정지 — 스페이스로 재개" : ""}</span>
     </div>
     <div class="card-stage" onclick="flipCard()">
       <div class="tbar" style="display:${autoSec ? "block" : "none"}"><div class="tbar-fill" id="tbarFill"></div></div>
-      ${hideImg ? "" : PHOTOS.has(w.id) ? `<div class="card-emoji"><img class="card-photo" src="images/${w.id}.webp" alt=""></div>` : w.img ? `<div class="card-emoji">${w.img}</div>` : ""}
-      <div class="arabic">${w.ar}</div>
-      <div id="cardBack" style="display:${flipped ? "block" : "none"}">${back}</div>
+      ${cardDir === "ko2ar"
+        ? `<div class="ko-big" style="font-size:40px;font-weight:800;padding:20px 0">${w.ko}</div>`
+        : `<div class="arabic">${w.ar}</div>`}
+      <div id="cardBack" style="display:${flipped ? "block" : "none"}">
+        ${cardDir === "ko2ar" ? `<div class="arabic">${w.ar}</div>` : ""}
+        ${hideImg ? "" : PHOTOS.has(w.id) ? `<div class="card-emoji"><img class="card-photo" src="images/${w.id}.webp" alt=""></div>` : w.img ? `<div class="card-emoji">${w.img}</div>` : ""}
+        ${back}
+      </div>
     </div>
     <div class="hint">카드 탭 = 뒤집기 · 단축키: ${keyLabel(KEYS.prev)} 이전 / ${keyLabel(KEYS.pause)} ${autoSec ? "일시정지·재개" : "뒤집기"} / ${keyLabel(KEYS.next)} 다음 · <a href="#" onclick="event.preventDefault();go('keys')" style="color:var(--accent)">단축키 변경</a></div>
     <div class="controls">
