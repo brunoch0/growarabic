@@ -137,12 +137,22 @@
     .quiz-q .arabic { font-size: 48px; }
     .drive-stage .main-text.arabic { font-size: 56px; }
   }
+/* 넓은 화면: 헤더에 메뉴 펼침, ☰ 숨김 */
+#topNav { display: none; margin-left: auto; gap: 2px; flex-wrap: wrap; }
+#topNav button { font-family: inherit; font-size: 14px; padding: 6px 9px; border: none; background: none; border-radius: 8px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+#topNav button:hover { background: var(--accent-soft); }
+#topNav button.on { background: var(--accent); color: #fff; font-weight: 700; }
+@media (min-width: 920px) {
+  #topNav { display: flex; }
+  #menuBtn { display: none; }
+}
 </style>
 </head>
 <body>
 <header>
   <h1 onclick="go('home')">🕌 GrowArabic</h1>
   <span class="crumb" id="crumb"></span>
+  <nav id="topNav"></nav>
   <button id="menuBtn" onclick="toggleMenu(event)" style="margin-left:auto;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;color:var(--ink)">☰</button>
   <div id="dropMenu" style="display:none;position:absolute;top:52px;right:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:20;min-width:190px;overflow:hidden"></div>
 </header>
@@ -263,6 +273,15 @@ let KEYS = { ...DEFAULT_KEYS, ...(savedKeymap.flip ? savedKeymap : {}) };
 const saveKeys = () => localStorage.setItem("keymap", JSON.stringify(KEYS));
 const keyLabel = (code) => ({ Space: "스페이스", ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Enter: "Enter" }[code] || code.replace(/^Key|^Digit|^Numpad/, ""));
 
+// ── 헤더 인라인 메뉴 (넓은 화면)
+function renderTopNav() {
+  const nav = document.getElementById("topNav");
+  if (!nav) return;
+  const viewOf = { settings: "keys" };
+  const items = [["home", "🏡 홈", "go('home')"], ...menuOrder().map(id => [viewOf[id] || id, MENU_DEFS[id].html.split("<small>")[0].trim(), MENU_DEFS[id].action.replace(/"/g, "&quot;")])];
+  nav.innerHTML = items.map(([v, label, action]) => `<button class="${currentView === v ? "on" : ""}" onclick="${action}">${label}</button>`).join("");
+}
+
 // ── 헤더 메뉴 (☰ 드롭다운)
 function toggleMenu(e) {
   e && e.stopPropagation();
@@ -294,6 +313,7 @@ function go(name, arg, fromHistory) {
   if (!fromHistory) try { history.pushState({ name, arg }, "", "#" + name); } catch (e) {}
   const labels = { home: "", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
   $("#crumb").textContent = labels[name] || "";
+  renderTopNav();
   views[name](arg);
   window.scrollTo(0, 0);
 }
@@ -332,7 +352,7 @@ const MENU_DEFS = {
   patterns: { name: "문법 패턴", html: "📐 문법 패턴 <small>형용사 3패턴 · هَلْ 의문문</small>", action: "go('patterns')" },
   drive: { name: "운전 모드", html: "🚗 운전 모드 <small>듣기 반복 (뜻→아랍어→발음)</small>", action: "go('drive')" },
   phrases: { name: "회화 표현", html: "💬 회화 표현 <small>인사·감사·일상 표현</small>", action: "go('phrases')" },
-  pdf: { name: "PDF 열기", html: "📄 PDF 열기 <small>프린트용 단어장</small>", action: "window.open('pdf/arabic-basic-vocab-large.pdf')" },
+  pdf: { name: "인쇄용 단어장", html: "📄 인쇄용 단어장 <small>자동 갱신 · 인쇄/PDF 저장</small>", action: "window.open('pdf/wordbook.html')" },
   add: { name: "단어 추가", html: "➕ 단어 추가 <small>직접 수집한 단어 등록</small>", action: "go('add')" },
   settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
 };
@@ -349,6 +369,7 @@ function moveMenu(id, dir) {
   if (j < 0 || j >= order.length) return;
   [order[i], order[j]] = [order[j], order[i]];
   localStorage.setItem("menuOrder", JSON.stringify(order));
+  renderTopNav();
   views.keys();
 }
 
@@ -486,7 +507,7 @@ function renderCard() {
   const back = `
     <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
     <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
-    ${w.fem ? `<div class="fem-line">여성형: <span class="arabic">${w.fem}</span> ${w.femRoman}</div>` : ""}
+    ${w.fem ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형: <span class="arabic">${w.fem}</span> ${w.femRoman}</div>` : ""}
     ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${w.ex}</span></div>` : ""}
     ${w.note ? `<div class="note-line">💡 ${w.note}</div>` : ""}`;
   $("#main").innerHTML = `
@@ -732,7 +753,10 @@ views.patterns = () => {
       <b>규칙</b> — 주부는 한정, 술부는 비한정 · 형용사는 성을 맞춘다 · فِي 뒤에는 소유격 · هَلْ + 평서문 = 의문문<br>
       <b>격변화 (8/9)</b> — 주격 ـُ / 목적격 ـَ / 소유격·전치사 뒤 ـِ<br>
       <b>태양문자 (8/9)</b> — ال 뒤에 태양문자가 오면 ل이 그 자음으로 동화된다: اَلشَّمْسُ = "앗샴수" (알샴수 ✗)<br>
-      <b>과거동사 여성형 (8/9)</b> — 주어가 여성이면 동사 끝에 تْ: شَرِبَ → شَرِبَتْ
+      <b>과거동사 여성형 (8/9)</b> — 주어가 여성이면 동사 끝에 تْ: شَرِبَ → شَرِبَتْ<br>
+      <b>수 — 쌍수 (2과)</b> — 주격 ـَانِ / 목적·소유격 ـَيْنِ · ة는 ت로 바꾼 뒤 붙임(سَيَّارَتَانِ) · 형용사도 쌍수로 일치 · أَبٌ·أَخٌ은 특수형(أَبَوَانِ·أَخَوَانِ)<br>
+      <b>수 — 남성규칙복수 (2과)</b> — 주격 ـُونَ / 목적·소유격 ـِينَ · 인간 남성명사만 · 수식·술어 형용사도 남성복수형<br>
+      <b>수 — 여성규칙복수 (2과)</b> — ة 떼고 주격 ـَاتٌ / 목적·소유격 ـَاتٍ · 사람이면 형용사도 여성복수, <u>비인간 복수는 여성단수 취급</u>(اَلسَّيَّارَاتُ جَدِيدَةٌ)
     </div>
     ${PATTERNS.map(p => `
       <div class="pattern-set">
@@ -844,7 +868,7 @@ views.list = (filter) => {
   const chip = (label, val) => `<button onclick="go('list'${val ? `,'${val}'` : ""})" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid ${filter === val || (!filter && !val) ? "var(--accent)" : "var(--line)"};background:${filter === val || (!filter && !val) ? "var(--accent)" : "var(--card)"};color:${filter === val || (!filter && !val) ? "#fff" : "var(--ink)"}">${label}</button>`;
   $("#main").innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;position:sticky;top:57px;background:var(--bg);padding:8px 0;z-index:4">
-      ${chip("전체", "")}${all.map(p => chip(`${p} ${pool.filter(w => w.pos === p).length}`, p)).join("")}
+      ${chip(`전체 ${pool.length}`, "")}${all.map(p => chip(`${p} ${pool.filter(w => w.pos === p).length}`, p)).join("")}
       <span style="width:8px"></span>
       ${wfChip("⭐ 안외워짐만", wordFilter.starOnly, `setWF('starOnly',${!wordFilter.starOnly},'list',${fArg})`)}
       ${wfChip("🏆 아는 단어 제외", wordFilter.skipKnown, `setWF('skipKnown',${!wordFilter.skipKnown},'list',${fArg})`)}
@@ -858,8 +882,8 @@ views.list = (filter) => {
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
         ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}',0.85,null,'grady')">👨 남성 발음</button>
-          <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}',0.85,null,'yara')">👩 여성 발음</button>
+          <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">🔊 ${w.fem ? "남성형" : "발음"}</button>
+          ${w.fem ? `<button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형 (ة)</button>` : ""}
         </div>
       </div>`).join("")}`).join("") +
     `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;

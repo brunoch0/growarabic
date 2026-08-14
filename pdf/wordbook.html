@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowArabic 인쇄용 단어장</title>
+<style>
+  body { font-family: -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; margin: 28px; color: #1e1e1e; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .sub { color: #777; font-size: 13px; margin-bottom: 18px; }
+  h2 { font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 4px; margin: 28px 0 6px; break-after: avoid; }
+  .w { display: flex; align-items: baseline; gap: 16px; padding: 10px 0; border-bottom: 1px solid #e2e2e2; break-inside: avoid; }
+  .ar { font-size: 40px; font-family: "SF Arabic", "Geeza Pro", "Traditional Arabic", serif; direction: rtl; min-width: 250px; text-align: right; line-height: 1.9; }
+  .info { flex: 1; }
+  .ko { font-size: 19px; font-weight: 700; }
+  .en { color: #666; font-size: 14px; font-weight: 400; }
+  .rm { color: #666; font-size: 14px; margin-top: 2px; }
+  .note { color: #999; font-size: 12px; margin-top: 2px; }
+  .bar { position: sticky; top: 0; background: #fff8e8; border: 1px solid #e8d9b0; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 12px; }
+  .bar button { font-family: inherit; font-size: 15px; padding: 8px 18px; border-radius: 8px; border: none; background: #2f6b4f; color: #fff; cursor: pointer; }
+  @media print { .bar { display: none } body { margin: 8px } }
+</style>
+</head>
+<body>
+<div class="bar">🖨 이 페이지는 data.js에서 자동 생성됩니다 — 새 단어 추가 시 자동 반영. 인쇄하거나 PDF로 저장하세요. <button onclick="print()">인쇄 / PDF 저장</button></div>
+<h1>🕌 GrowArabic 단어장</h1>
+<div class="sub" id="sub"></div>
+<div id="out"></div>
+<script src="../data.js"></script>
+<script>
+const order = ["명사", "형용사", "분사", "집합명사", "대명사", "지시어", "전치사", "부사", "의문사", "답변", "동사", "지명", "구", "표현", "이름"];
+const groups = order.filter(p => VOCAB.some(w => w.pos === p));
+const lastUpdate = VOCAB.map(w => w.date).filter(Boolean).sort().pop() || "";
+document.getElementById("sub").innerHTML = `전체 <b>${VOCAB.length}단어</b> · 마지막 단어 추가: <b>${lastUpdate}</b> — 출력본의 날짜와 비교해 새로 출력할지 판단하세요`;
+document.getElementById("out").innerHTML = groups.map(p => `
+  <h2>${p} (${VOCAB.filter(w => w.pos === p).length})</h2>
+  ${VOCAB.filter(w => w.pos === p).map(w => `
+    <div class="w">
+      <div class="ar">${w.ar}${w.fem ? ` / ${w.fem}` : ""}</div>
+      <div class="info">
+        <span class="ko">${w.ko}</span> <span class="en">— ${w.en || ""}</span>
+        <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
+        ${w.note ? `<div class="note">💡 ${w.note}</div>` : ""}
+      </div>
+    </div>`).join("")}`).join("");
+</script>
+</body>
+</html>
