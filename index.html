@@ -284,17 +284,23 @@ document.addEventListener("click", (e) => {
 // ── 라우팅
 const views = {};
 let currentView = "";
-function go(name, arg) {
+function go(name, arg, fromHistory) {
   currentView = name;
   const dm = document.getElementById("dropMenu");
   if (dm) dm.style.display = "none";
   stopSpeak(); driveStop();
   if (typeof clearCardTimers === "function") clearCardTimers();
+  // 브라우저 뒤로/앞으로 가기 지원 (file:// 등 pushState 불가 환경은 조용히 무시)
+  if (!fromHistory) try { history.pushState({ name, arg }, "", "#" + name); } catch (e) {}
   const labels = { home: "", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
   $("#crumb").textContent = labels[name] || "";
   views[name](arg);
   window.scrollTo(0, 0);
 }
+window.addEventListener("popstate", (e) => {
+  const s = e.state || { name: "home" };
+  if (views[s.name]) go(s.name, s.arg, true);
+});
 
 // ── 대시보드
 views.home = () => {
@@ -1037,7 +1043,8 @@ views.phrases = () => {
     </div>`).join("") + `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;
 };
 
-go("home");
+try { history.replaceState({ name: "home" }, "", "#home"); } catch (e) {}
+go("home", undefined, true);
 </script>
 </body>
 </html>
