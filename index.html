@@ -311,7 +311,7 @@ function go(name, arg, fromHistory) {
   if (typeof clearCardTimers === "function") clearCardTimers();
   // 브라우저 뒤로/앞으로 가기 지원 (file:// 등 pushState 불가 환경은 조용히 무시)
   if (!fromHistory) try { history.pushState({ name, arg }, "", "#" + name); } catch (e) {}
-  const labels = { home: "", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
+  const labels = { home: "", lesson: "교재 순서 복습", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
   $("#crumb").textContent = labels[name] || "";
   renderTopNav();
   views[name](arg);
@@ -346,6 +346,7 @@ views.home = () => {
 };
 // 메뉴 순서 (설정에서 변경 가능)
 const MENU_DEFS = {
+  lesson: { name: "교재 순서 복습", html: "📘 교재 순서 복습 <small>제1과·제2과 목차대로</small>", action: "go('lesson')" },
   cards: { name: "단어 카드", html: "🃏 단어 카드 <small>큰 글씨 + 모음표시</small>", action: "go('cards')" },
   list: { name: "단어장 목록", html: "📖 단어장 목록 <small>전체 단어 쭉 보기</small>", action: "go('list')" },
   quiz: { name: "복습 퀴즈", html: "✍️ 복습 퀴즈 <small>뜻·성별·한정 맞히기</small>", action: "go('quiz')" },
@@ -356,7 +357,7 @@ const MENU_DEFS = {
   add: { name: "단어 추가", html: "➕ 단어 추가 <small>직접 수집한 단어 등록</small>", action: "go('add')" },
   settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
 };
-const DEFAULT_MENU = ["cards", "list", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
+const DEFAULT_MENU = ["lesson", "cards", "list", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
 // 단어 추가는 아직 개발 중 — 로컬(file://)에서만 노출, 라이브에서는 숨김
 const DEV = location.protocol === "file:" || location.hostname === "localhost";
 function menuOrder() {
@@ -598,15 +599,18 @@ views.quiz = () => {
       <button class="wide" onclick="startQuiz('build')">🧩 해석 → 문장 만들기 <small>단어 타일을 순서대로 탭</small></button>
     </div>`;
 };
-function startQuiz(mode) {
+function startQuiz(mode, sec) {
   let items;
+  const exPool = sec ? EXAMPLES.filter(e => e.sec === sec) : EXAMPLES;
   if (mode === "gender") items = shuffle(VOCAB.filter(w => (w.gender === "m" || w.gender === "f") && ["명사", "집합명사"].includes(w.pos))).slice(0, 12);
   else if (mode === "definite") items = shuffle(PATTERNS.flatMap(p => p.forms.map(f => ({ ...f, set: p })))).slice(0, 10);
   else if (mode === "hal") items = shuffle([...HAL_ITEMS]);
-  else if (mode === "sent2ko") items = shuffle([...EXAMPLES]).slice(0, 10);
-  else if (mode === "build") items = shuffle(EXAMPLES.filter(e => e.ar.split(" ").length >= 2)).slice(0, 8);
+  else if (mode === "sent2ko") items = shuffle([...exPool]).slice(0, sec ? 20 : 10);
+  else if (mode === "build") items = shuffle(exPool.filter(e => e.ar.split(" ").length >= 2)).slice(0, sec ? 20 : 8);
   else items = shuffle(VOCAB.filter(w => w.pos !== "이름")).slice(0, 12);
-  quizState = { mode, items, idx: 0, right: 0, wrongs: [] };
+  quizState = { mode, items, idx: 0, right: 0, wrongs: [], sec };
+  currentView = "quiz";
+  $("#crumb").textContent = "복습 퀴즈";
   renderQuiz();
 }
 function quizNext() { quizState.idx++; renderQuiz(); }
@@ -616,7 +620,8 @@ function renderQuiz() {
     $("#main").innerHTML = `
       <div class="quiz-q"><div class="ko-big">결과: ${right} / ${items.length}</div></div>
       <div class="controls">
-        <button class="primary" onclick="startQuiz('${mode}')">같은 퀴즈 다시</button>
+        <button class="primary" onclick="startQuiz('${mode}'${quizState.sec ? `,'${quizState.sec}'` : ""})">같은 퀴즈 다시</button>
+        ${quizState.sec ? `<button onclick="go('lesson','${LESSONS.flatMap(l => l.sections).find(x => x.sec === quizState.sec)?.id || ""}')">← 교재로 돌아가기</button>` : ""}
         <button onclick="go('quiz')">다른 퀴즈</button>
         <button onclick="go('home')">홈으로</button>
       </div>
@@ -743,6 +748,105 @@ function renderBuild() {
   }
   $("#undoBtn").onclick = () => { if (!done && picked.length) { picked.pop(); draw(); } };
   draw();
+}
+
+// ── 교재 순서 복습 (제N과 → 절 → 규칙·표·단어·문장·문제)
+const secDone = () => new Set(JSON.parse(localStorage.getItem("secDone") || "[]"));
+function markSec(id) {
+  const s = secDone();
+  s.has(id) ? s.delete(id) : s.add(id);
+  localStorage.setItem("secDone", JSON.stringify([...s]));
+  views.lesson(CUR_SEC);
+}
+const findSec = (id) => LESSONS.flatMap(l => l.sections).find(s => s.id === id);
+let CUR_SEC = null;
+
+views.lesson = (secId) => {
+  CUR_SEC = secId || null;
+  const done = secDone();
+  if (!secId) {
+    $("#main").innerHTML = `
+      <div class="rule-box">교재 목차 순서대로 복습합니다. 절을 누르면 규칙 → 예시 → 단어 → 문장 → 문제 순으로 이어집니다.</div>
+      ${LESSONS.map(l => {
+        const n = l.sections.filter(s => done.has(s.id)).length;
+        return `
+        <h2 style="font-size:17px;margin:20px 4px 8px">${l.title} <span style="color:var(--sub);font-size:14px;font-weight:400">${l.sub} · ${n}/${l.sections.length} 완료</span></h2>
+        <div class="menu">
+          ${l.sections.map(s => `<button class="wide" style="text-align:left;${done.has(s.id) ? "border-color:var(--accent)" : ""}" onclick="go('lesson','${s.id}')">
+            ${done.has(s.id) ? "✅" : "▫️"} ${s.title}
+          </button>`).join("")}
+        </div>`;
+      }).join("")}`;
+    return;
+  }
+  const s = findSec(secId);
+  if (!s) { views.lesson(); return; }
+  const all = LESSONS.flatMap(l => l.sections);
+  const i = all.findIndex(x => x.id === secId);
+  const exs = s.sec ? EXAMPLES.filter(e => e.sec === s.sec) : [];
+  const words = (s.words || []).map(id => VOCAB.find(w => w.id === id)).filter(Boolean);
+  $("#main").innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <button class="choice" style="padding:8px 14px" onclick="go('lesson')">← 목차</button>
+      <b style="font-size:17px">${s.title}</b>
+    </div>
+    <div class="rule-box">${s.rule}</div>
+    ${s.rows ? `<div class="pattern-set">${s.rows.map(r => `
+      <div class="pattern-row" style="cursor:pointer" onclick="speak('${r.ar.replace(/'/g, "\\'").replace(/ → /g, " ")}','ar-SA',0.85)">
+        <div class="desc"><b>${r.ko}</b><span>${r.roman}${r.note ? "<br>" + r.note : ""}</span></div>
+        <div class="arabic" style="font-size:30px">${r.ar}</div>
+      </div>`).join("")}</div>` : ""}
+    ${(s.patterns || []).map(pi => { const p = PATTERNS[pi]; return `
+      <div class="pattern-set">
+        <h3>${p.noun} + ${p.adj}${p.femNote ? ` <span style="color:var(--accent)">· ${p.femNote}</span>` : ""}</h3>
+        ${p.forms.map(f => `
+          <div class="pattern-row" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
+            <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
+            <div class="arabic">${f.ar}</div>
+          </div>`).join("")}
+      </div>`; }).join("")}
+    ${s.hal ? `<div class="pattern-set">${HAL_ITEMS.map(h => `
+      <div class="pattern-row" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
+        <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}</span></div>
+        <div class="arabic">${h.q}</div>
+      </div>`).join("")}</div>` : ""}
+    ${words.length ? `
+      <h2 style="font-size:16px;color:var(--sub);margin:20px 4px 8px">이 절의 단어 (${words.length})</h2>
+      ${words.map(w => `
+        <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">
+          <div class="arabic">${w.ar}${w.fem ? ` / ${w.fem}` : ""}</div>
+          <div class="kp">${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en || ""}</span></div>
+          <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}</div>
+          ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
+        </div>`).join("")}` : ""}
+    ${exs.length ? `
+      <h2 style="font-size:16px;color:var(--sub);margin:20px 4px 8px">이 절의 문장 (${exs.length})</h2>
+      ${exs.map(e => `
+        <div class="phrase-card" onclick="speak('${e.ar.replace(/'/g, "\\'")}','ar-SA',0.85)">
+          <div class="arabic" style="font-size:30px">${e.ar}</div>
+          <div class="kp">${e.ko}</div>
+          <div class="rm">${e.roman}</div>
+        </div>`).join("")}
+      <div class="controls">
+        <button class="primary" onclick="startQuiz('sent2ko','${s.sec}')">📜 문장 → 해석 문제</button>
+        <button onclick="startQuiz('build','${s.sec}')">🧩 해석 → 문장 만들기</button>
+      </div>` : ""}
+    ${words.length ? `<div class="controls"><button onclick="startSecCards('${s.id}')">🃏 이 절 단어카드</button></div>` : ""}
+    <div class="controls" style="margin-top:18px">
+      <button onclick="markSec('${s.id}')" ${done.has(s.id) ? 'style="background:var(--accent);color:#fff"' : ""}>${done.has(s.id) ? "✅ 복습 완료" : "☐ 복습 완료로 표시"}</button>
+    </div>
+    <div class="controls">
+      ${i > 0 ? `<button onclick="go('lesson','${all[i - 1].id}')">← ${all[i - 1].title.slice(0, 14)}</button>` : ""}
+      ${i < all.length - 1 ? `<button class="primary" onclick="go('lesson','${all[i + 1].id}')">다음: ${all[i + 1].title.slice(0, 14)} →</button>` : `<button onclick="go('lesson')">목차로</button>`}
+    </div>`;
+};
+function startSecCards(secId) {
+  const s = findSec(secId);
+  deck = shuffle((s.words || []).map(id => VOCAB.find(w => w.id === id)).filter(Boolean));
+  deckIdx = 0; flipped = false;
+  currentView = "cards";
+  $("#crumb").textContent = "단어 카드";
+  renderCard();
 }
 
 // ── 문법 패턴 학습
