@@ -10,6 +10,27 @@
     --ink: #1a1a1a; --sub: #666; --line: #ddd; --bg: #faf9f6; --card: #fff;
     --accent: #0b6e4f; --accent-soft: #e6f2ee; --wrong: #c0392b; --right: #0b6e4f;
   }
+  /* 문법 요소 색 구분 */
+  :root {
+    --hl-def: #1565c0; --hl-def-bg: #e3f0fb;
+    --hl-indef: #b45309; --hl-indef-bg: #fdf0dc;
+    --hl-dual: #0b6e4f; --hl-dual-bg: #e2f3ec;
+    --hl-plural: #7b2d8e; --hl-plural-bg: #f5e6f8;
+  }
+  .arabic i, .hl-legend i { font-style: normal; }
+  .hl-def { color: var(--hl-def); background: var(--hl-def-bg); border-radius: 4px; }
+  .hl-indef { color: var(--hl-indef); background: var(--hl-indef-bg); border-radius: 4px; }
+  .hl-dual { color: var(--hl-dual); background: var(--hl-dual-bg); border-radius: 4px; }
+  .hl-plural { color: var(--hl-plural); background: var(--hl-plural-bg); border-radius: 4px; }
+  .hl-legend {
+    display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;
+    font-size: 13px; color: var(--sub); margin: 0 4px 12px;
+  }
+  .hl-legend i { padding: 0 3px; border-radius: 4px; margin-right: 4px; }
+  .hl-legend button {
+    font-family: inherit; font-size: 13px; padding: 5px 12px; border-radius: 14px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer;
+  }
   body {
     background: var(--bg); color: var(--ink);
     font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
@@ -216,6 +237,52 @@ const stopSpeak = () => {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (curAudio) { curAudio.pause(); curAudio = null; }
 };
+// ── 문법 요소 색 구분 (한정 ال · 탄윈 · 쌍수/복수 어미)
+let hlOn = localStorage.getItem("hlOn") !== "0";
+function toggleHl() {
+  hlOn = !hlOn;
+  localStorage.setItem("hlOn", hlOn ? "1" : "0");
+  // 진행 상태를 잃지 않도록 화면별로 다시 그린다
+  if (currentView === "cards") renderCard();
+  else if (currentView === "quiz" && quizState) renderQuiz();
+  else if (currentView === "lesson") views.lesson(CUR_SEC);
+  else if (views[currentView]) views[currentView]();
+}
+const HL_LEGEND = [
+  ["def", "اَلْ 한정 관사"],
+  ["indef", "탄윈 (비한정)"],
+  ["dual", "쌍수 어미 ـَانِ ـَيْنِ"],
+  ["plural", "복수 어미 ـُونَ ـِينَ ـَاتٌ"],
+];
+function hlLegend() {
+  return `<div class="hl-legend">${HL_LEGEND.map(([k, t]) => `<span><i class="hl-${k}">■</i>${t}</span>`).join("")}
+    <button onclick="toggleHl()">${hlOn ? "색 끄기" : "색 켜기"}</button></div>`;
+}
+// 아랍어 문자열에 문법 요소 색을 입힌다 (표시 전용 — 원문은 그대로 둔다)
+function hl(text) {
+  if (!hlOn || !text) return text;
+  return String(text).split(" ").map(word => {
+    if (!/[؀-ۿ]/.test(word)) return word;
+    let w = word, pre = "", suf = "";
+    // 접속사 وَ / فَ 는 관사 판정에서 제외
+    const conj = w.match(/^([وف]َ?)(?=[اٱ])/);
+    if (conj) { pre = conj[1]; w = w.slice(conj[1].length); }
+    // 1) 한정 관사 اَلْ (태양문자 동화형 اَل 포함)
+    const art = w.match(/^([اٱ][َُِ]?ل[ْ]?)/);
+    if (art) { pre += `<i class="hl-def">${art[1]}</i>`; w = w.slice(art[1].length); }
+    // 2) 어미 (긴 것부터)
+    const suffixes = [
+      [/(َانِ)$/, "dual"], [/(َيْنِ)$/, "dual"],
+      [/(ُونَ)$/, "plural"], [/(ِينَ)$/, "plural"], [/(َات[ٌٍُِ]?)$/, "plural"],
+      [/([ًٌٍ]ا?)$/, "indef"],
+    ];
+    for (const [re, cls] of suffixes) {
+      const m = w.match(re);
+      if (m) { suf = `<i class="hl-${cls}">${m[1]}</i>`; w = w.slice(0, w.length - m[1].length); break; }
+    }
+    return pre + w + suf;
+  }).join(" ");
+}
 // 아랍어 발음: 선택한 보이스의 녹음 파일 → grady 폴백 → 브라우저 TTS 폴백
 const VOICES = [
   { id: "grady", label: "1번 · 남성 (Grady)" },
@@ -508,8 +575,8 @@ function renderCard() {
   const back = `
     <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
     <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
-    ${w.fem ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형: <span class="arabic">${w.fem}</span> ${w.femRoman}</div>` : ""}
-    ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${w.ex}</span></div>` : ""}
+    ${w.fem ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형: <span class="arabic">${hl(w.fem)}</span> ${w.femRoman}</div>` : ""}
+    ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${hl(w.ex)}</span></div>` : ""}
     ${w.note ? `<div class="note-line">💡 ${w.note}</div>` : ""}`;
   $("#main").innerHTML = `
     ${cardFilterBar()}
@@ -528,9 +595,9 @@ function renderCard() {
       ${hideImg ? "" : mediaHtml}
       ${cardDir === "ko2ar"
         ? `<div class="ko-big" style="font-size:40px;font-weight:800;padding:20px 0">${w.ko}</div>`
-        : `<div class="arabic">${w.ar}</div>`}
+        : `<div class="arabic">${hl(w.ar)}</div>`}
       <div id="cardBack" style="display:${flipped ? "block" : "none"}">
-        ${cardDir === "ko2ar" ? `<div class="arabic">${w.ar}</div>` : ""}
+        ${cardDir === "ko2ar" ? `<div class="arabic">${hl(w.ar)}</div>` : ""}
         ${hideImg ? mediaHtml : ""}
         ${back}
       </div>
@@ -641,34 +708,34 @@ function renderQuiz() {
   let qHtml = "", choices = [], correct, why = "";
 
   if (mode === "sent2ko") {
-    qHtml = `<div class="prompt">이 문장의 해석은?</div><div class="arabic" style="font-size:44px">${it.ar}</div>`;
+    qHtml = `<div class="prompt">이 문장의 해석은?</div><div class="arabic" style="font-size:44px">${hl(it.ar)}</div>`;
     correct = it.ko;
     choices = shuffle([it.ko, ...shuffle(EXAMPLES.filter(e => e.ar !== it.ar)).slice(0, 3).map(e => e.ko)]);
     why = it.roman;
   } else if (mode === "ar2ko") {
-    qHtml = `<div class="prompt">이 단어의 뜻은?</div><div class="arabic">${it.ar}</div>`;
+    qHtml = `<div class="prompt">이 단어의 뜻은?</div><div class="arabic">${hl(it.ar)}</div>`;
     correct = it.ko;
     choices = shuffle([it.ko, ...shuffle(VOCAB.filter(w => w.id !== it.id && w.pos !== "이름")).slice(0, 3).map(w => w.ko)]);
   } else if (mode === "ko2ar") {
     qHtml = `<div class="prompt">아랍어로 고르세요</div><div class="ko-big">${it.ko}</div>`;
     correct = it.ar;
     choices = shuffle([it.ar, ...shuffle(VOCAB.filter(w => w.id !== it.id)).slice(0, 3).map(w => w.ar)]);
-    choices = choices.map(c => `<span class="arabic">${c}</span>`);
-    correct = `<span class="arabic">${correct}</span>`;
+    choices = choices.map(c => `<span class="arabic">${hl(c)}</span>`);
+    correct = `<span class="arabic">${hl(correct)}</span>`;
   } else if (mode === "gender") {
-    qHtml = `<div class="prompt">이 명사의 성은? (${it.ko})</div><div class="arabic">${it.ar}</div>`;
+    qHtml = `<div class="prompt">이 명사의 성은? (${it.ko})</div><div class="arabic">${hl(it.ar)}</div>`;
     correct = it.gender === "f" ? "여성" : "남성";
     choices = ["남성", "여성"];
     why = it.note || (it.gender === "f" ? "여성명사" : "남성명사");
   } else if (mode === "definite") {
-    qHtml = `<div class="prompt">이 표현의 뜻은?</div><div class="arabic">${it.ar}</div><div style="font-size:13px;color:var(--sub);margin-top:8px">${it.roman}</div>`;
+    qHtml = `<div class="prompt">이 표현의 뜻은?</div><div class="arabic">${hl(it.ar)}</div><div style="font-size:13px;color:var(--sub);margin-top:8px">${it.roman}</div>`;
     correct = it.ko;
     choices = shuffle(it.set.forms.map(f => f.ko));
     why = it.type;
   } else if (mode === "hal") {
-    qHtml = `<div class="prompt">هَلْ 의문문으로 만드세요</div><div class="arabic" style="font-size:44px">${it.plain}</div><div style="font-size:15px;margin-top:8px">${it.plainKo}</div>`;
-    correct = `<span class="arabic">${it.q}</span>`;
-    const others = shuffle(HAL_ITEMS.filter(h => h.q !== it.q)).slice(0, 2).map(h => `<span class="arabic">${h.q}</span>`);
+    qHtml = `<div class="prompt">هَلْ 의문문으로 만드세요</div><div class="arabic" style="font-size:44px">${hl(it.plain)}</div><div style="font-size:15px;margin-top:8px">${it.plainKo}</div>`;
+    correct = `<span class="arabic">${hl(it.q)}</span>`;
+    const others = shuffle(HAL_ITEMS.filter(h => h.q !== it.q)).slice(0, 2).map(h => `<span class="arabic">${hl(h.q)}</span>`);
     choices = shuffle([correct, ...others]);
     why = `${it.qRoman} — ${it.qKo}`;
   }
@@ -738,11 +805,11 @@ function renderBuild() {
     if (ok) quizState.right++;
     else quizState.wrongs.push({
       q: `<div class="ko-big" style="font-size:22px">${it.ko}</div>`,
-      my: `<span class="arabic">${picked.map(p => p.w).join(" ")}</span>`,
-      correct: `<span class="arabic">${it.ar}</span>`,
+      my: `<span class="arabic">${hl(picked.map(p => p.w).join(" "))}</span>`,
+      correct: `<span class="arabic">${hl(it.ar)}</span>`,
       why: it.roman,
     });
-    fb.innerHTML = `${ok ? "⭕ 정답!" : `❌ 정답: <div class="arabic" style="font-size:34px">${it.ar}</div>`}<div class="why">${it.roman}</div>
+    fb.innerHTML = `${ok ? "⭕ 정답!" : `❌ 정답: <div class="arabic" style="font-size:34px">${hl(it.ar)}</div>`}<div class="why">${it.roman}</div>
       ${ok ? "" : `<div class="controls" style="margin-top:10px"><button class="primary" onclick="quizNext()">확인했어요, 다음 →</button></div>`}`;
     if (ok) setTimeout(quizNext, 1400);
   }
@@ -791,10 +858,11 @@ views.lesson = (secId) => {
       <b style="font-size:17px">${s.title}</b>
     </div>
     <div class="rule-box">${s.rule}</div>
+    ${hlLegend()}
     ${s.rows ? `<div class="pattern-set">${s.rows.map(r => `
       <div class="pattern-row" style="cursor:pointer" onclick="speak('${r.ar.replace(/'/g, "\\'").replace(/ → /g, " ")}','ar-SA',0.85)">
         <div class="desc"><b>${r.ko}</b><span>${r.roman}${r.note ? "<br>" + r.note : ""}</span></div>
-        <div class="arabic" style="font-size:30px">${r.ar}</div>
+        <div class="arabic" style="font-size:30px">${hl(r.ar)}</div>
       </div>`).join("")}</div>` : ""}
     ${(s.patterns || []).map(pi => { const p = PATTERNS[pi]; return `
       <div class="pattern-set">
@@ -802,19 +870,19 @@ views.lesson = (secId) => {
         ${p.forms.map(f => `
           <div class="pattern-row" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
             <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
-            <div class="arabic">${f.ar}</div>
+            <div class="arabic">${hl(f.ar)}</div>
           </div>`).join("")}
       </div>`; }).join("")}
     ${s.hal ? `<div class="pattern-set">${HAL_ITEMS.map(h => `
       <div class="pattern-row" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
         <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}</span></div>
-        <div class="arabic">${h.q}</div>
+        <div class="arabic">${hl(h.q)}</div>
       </div>`).join("")}</div>` : ""}
     ${words.length ? `
       <h2 style="font-size:16px;color:var(--sub);margin:20px 4px 8px">이 절의 단어 (${words.length})</h2>
       ${words.map(w => `
         <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">
-          <div class="arabic">${w.ar}${w.fem ? ` / ${w.fem}` : ""}</div>
+          <div class="arabic">${hl(w.ar)}${w.fem ? ` / ${hl(w.fem)}` : ""}</div>
           <div class="kp">${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en || ""}</span></div>
           <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}</div>
           ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
@@ -823,7 +891,7 @@ views.lesson = (secId) => {
       <h2 style="font-size:16px;color:var(--sub);margin:20px 4px 8px">이 절의 문장 (${exs.length})</h2>
       ${exs.map(e => `
         <div class="phrase-card" onclick="speak('${e.ar.replace(/'/g, "\\'")}','ar-SA',0.85)">
-          <div class="arabic" style="font-size:30px">${e.ar}</div>
+          <div class="arabic" style="font-size:30px">${hl(e.ar)}</div>
           <div class="kp">${e.ko}</div>
           <div class="rm">${e.roman}</div>
         </div>`).join("")}
@@ -852,6 +920,7 @@ function startSecCards(secId) {
 // ── 문법 패턴 학습
 views.patterns = () => {
   $("#main").innerHTML = `
+    ${hlLegend()}
     <div class="rule-box">
       <b>형용사 3패턴</b> — ① 비한정+비한정 = "한 큰 집" ② 한정+한정 = "그 큰 집" ③ 한정 주부+비한정 술부 = "그 집은 크다" (문장!)<br>
       <b>규칙</b> — 주부는 한정, 술부는 비한정 · 형용사는 성을 맞춘다 · فِي 뒤에는 소유격 · هَلْ + 평서문 = 의문문<br>
@@ -868,7 +937,7 @@ views.patterns = () => {
         ${p.forms.map(f => `
           <div class="pattern-row">
             <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
-            <div class="arabic" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${f.ar}</div>
+            <div class="arabic" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${hl(f.ar)}</div>
           </div>`).join("")}
       </div>`).join("")}
     <div class="pattern-set">
@@ -876,7 +945,7 @@ views.patterns = () => {
       ${HAL_ITEMS.map(h => `
         <div class="pattern-row">
           <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}${h.yes ? `<br>답: ${h.yesRoman || ""}` : ""}</span></div>
-          <div class="arabic" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${h.q}</div>
+          <div class="arabic" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${hl(h.q)}</div>
         </div>`).join("")}
     </div>
     <div class="controls"><button class="primary" onclick="startQuiz('definite')">이 패턴으로 퀴즈 풀기</button></div>`;
@@ -976,12 +1045,12 @@ views.list = (filter) => {
       <span style="width:8px"></span>
       ${wfChip("⭐ 안외워짐만", wordFilter.starOnly, `setWF('starOnly',${!wordFilter.starOnly},'list',${fArg})`)}
       ${wfChip("🏆 아는 단어 제외", wordFilter.skipKnown, `setWF('skipKnown',${!wordFilter.skipKnown},'list',${fArg})`)}
-    </div>` + (pool.length ? "" : `<p style="text-align:center;padding:40px">조건에 맞는 단어가 없습니다</p>`) + groups.map(p => `
+    </div>` + hlLegend() + (pool.length ? "" : `<p style="text-align:center;padding:40px">조건에 맞는 단어가 없습니다</p>`) + groups.map(p => `
     <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">${p} (${pool.filter(w => w.pos === p).length})</h2>
     ${pool.filter(w => w.pos === p).map(w => `
       <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')" style="overflow:hidden">
         ${PHOTOS.has(w.id) ? `<img class="list-thumb" src="images/${w.id}.webp" alt="" loading="lazy">` : ""}
-        <div class="arabic">${w.ar}${w.fem ? ` / ${w.fem}` : ""}</div>
+        <div class="arabic">${hl(w.ar)}${w.fem ? ` / ${hl(w.fem)}` : ""}</div>
         <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
         ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
@@ -1002,6 +1071,11 @@ views.keys = () => {
       <div style="display:grid;gap:8px">
         ${VOICES.map(x => `<button data-voice="${x.id}" class="choice" style="text-align:left;${x.id === v ? "background:var(--accent);color:#fff;border-color:var(--accent)" : ""}" onclick="setVoice('${x.id}')">${x.label}</button>`).join("")}
       </div>
+    </div>
+    <div class="pattern-set">
+      <h3>🎨 문법 색 구분</h3>
+      <div style="font-size:14px;color:var(--sub);margin-bottom:10px">한정 관사 اَلْ · 탄윈(비한정) · 쌍수/복수 어미를 색으로 표시합니다.</div>
+      ${hlLegend()}
     </div>
     <div class="pattern-set">
       <h3>📋 메뉴 순서 — 화살표로 옮기세요</h3>
@@ -1101,7 +1175,7 @@ function ocrResultsHtml() {
     ${OCR_RESULTS.map((w, i) => `
       <div class="phrase-card" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="min-width:0" onclick="fillOcr(${i})">
-          <span class="arabic" style="font-size:28px">${w.ar}</span> <b>${w.ko}</b>
+          <span class="arabic" style="font-size:28px">${hl(w.ar)}</span> <b>${w.ko}</b>
           <span style="color:var(--sub);font-size:13px">${w.roman || ""} · ${w.pos}${w.gender ? " · " + (w.gender === "f" ? "여성" : "남성") : ""}</span>
           ${w.note ? `<div style="color:var(--sub);font-size:13px">${w.note}</div>` : ""}
         </div>
@@ -1137,7 +1211,7 @@ views.add = (msg) => {
       <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">내가 추가한 단어 (${custom.length})</h2>
       ${custom.map(w => `
         <div class="phrase-card" style="display:flex;justify-content:space-between;align-items:center">
-          <div><span class="arabic" style="font-size:30px">${w.ar}</span> <b>${w.ko}</b> <span style="color:var(--sub);font-size:13px">${w.roman || ""}</span></div>
+          <div><span class="arabic" style="font-size:30px">${hl(w.ar)}</span> <b>${w.ko}</b> <span style="color:var(--sub);font-size:13px">${w.roman || ""}</span></div>
           <button class="choice" style="padding:6px 12px;font-size:13px;color:var(--wrong)" onclick="delWord('${w.id}')">삭제</button>
         </div>`).join("")}` : ""}`;
 };
@@ -1164,7 +1238,7 @@ function delWord(id) {
 views.phrases = () => {
   $("#main").innerHTML = PHRASES.map(p => `
     <div class="phrase-card" onclick="sayAr('${p.id}','${p.ar.replace(/'/g, "\\'")}')">
-      <div class="arabic">${p.ar}</div>
+      <div class="arabic">${hl(p.ar)}</div>
       <div class="kp">${p.koPron} <span style="font-weight:400;font-size:15px">— ${p.ko}</span></div>
       <div class="rm">${p.roman}</div>
       <div class="mn">${p.note}</div>
