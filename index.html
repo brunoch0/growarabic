@@ -40,7 +40,29 @@
     direction: rtl; unicode-bidi: isolate;
     font-family: "SF Arabic", "Geeza Pro", "Arial Unicode MS", sans-serif;
     font-weight: 600; line-height: 1.5;
+    -webkit-user-select: text; user-select: text;
   }
+  /* 드래그한 부분 발음 + 뜻 찾기 */
+  #selPop {
+    display: none; position: absolute; z-index: 50; max-width: min(340px, 92vw);
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.22); overflow: hidden;
+    font-family: inherit; font-size: 15px; color: var(--ink);
+  }
+  #selPop .sp-say {
+    display: block; width: 100%; padding: 10px 14px; border: none;
+    background: var(--accent); color: #fff; font-family: inherit;
+    font-size: 15px; font-weight: 600; text-align: center; cursor: pointer;
+  }
+  #selPop .sp-hit {
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+    padding: 9px 14px; border-top: 1px solid var(--line); cursor: pointer;
+  }
+  #selPop .sp-hit:hover { background: var(--accent-soft); }
+  #selPop .sp-hit .arabic { font-size: 24px; }
+  #selPop .sp-hit b { font-size: 16px; }
+  #selPop .sp-hit small { color: var(--sub); font-size: 12px; }
+  #selPop .sp-none { padding: 9px 14px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13px; }
   header {
     display: flex; align-items: center; gap: 12px;
     padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card);
@@ -237,6 +259,82 @@ const stopSpeak = () => {
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (curAudio) { curAudio.pause(); curAudio = null; }
 };
+// ── 드래그한 부분: 발음 듣기 + 사전처럼 뜻 보기
+// 하라카·탄윈을 떼고 알리프 변형을 통일해야 문장 속 활용형도 단어장과 맞는다
+const AR_DIAC = /[\u064B-\u0653\u0670\u0640]/g;
+const arKey = (t) => String(t).replace(AR_DIAC, "").replace(/[\u0622\u0623\u0625\u0671]/g, "\u0627")
+  .replace(/\u0649/g, "\u064A").replace(/[^\u0600-\u06FF]/g, "");
+let DICT = null;
+function dict() {
+  if (DICT) return DICT;
+  DICT = new Map();
+  const put = (form, w, kind) => {
+    const k = arKey(form);
+    if (k && !DICT.has(k)) DICT.set(k, { w, kind });
+  };
+  for (const w of VOCAB) {
+    put(w.ar, w, "");
+    if (w.fem) put(w.fem, w, "여성형");
+    if (w.pl) put(w.pl, w, "복수형");
+  }
+  return DICT;
+}
+// 앞에 붙는 한정관사 اَلْ 과 접속사 وَ / فَ 는 떼고도 찾아본다
+function lookupAr(token) {
+  const d = dict(), k = arKey(token);
+  if (!k) return null;
+  for (const c of [k, k.replace(/^ال/, ""), k.replace(/^[وفبكل]/, ""), k.replace(/^[وف]ال/, ""), k.replace(/^[بكل]ال/, "")]) {
+    if (c && d.has(c)) return d.get(c);
+  }
+  return null;
+}
+let selPop = null;
+function selText() {
+  const s = window.getSelection();
+  return s && !s.isCollapsed ? s.toString().trim() : "";
+}
+function hideSelSpeak() { if (selPop) selPop.style.display = "none"; }
+function showSelSpeak() {
+  const t = selText();
+  if (!t || !/[\u0600-\u06FF]/.test(t)) return hideSelSpeak();
+  const r = window.getSelection().getRangeAt(0).getBoundingClientRect();
+  if (!r.width && !r.height) return hideSelSpeak();
+  if (!selPop) {
+    selPop = document.createElement("div");
+    selPop.id = "selPop";
+    selPop.onmousedown = (e) => e.preventDefault();  // 눌러도 선택이 풀리지 않게
+    selPop.onclick = (e) => {
+      e.stopPropagation();
+      const hit = e.target.closest ? e.target.closest(".sp-hit") : null;
+      if (hit) { const w = byId[hit.dataset.id]; if (w) sayAr(w.id, w.ar); return; }
+      const sel = selText();
+      if (sel) { stopSpeak(); speak(sel, "ar-SA", 0.8); }  // 조각은 녹음이 없어 브라우저 TTS
+    };
+    document.body.appendChild(selPop);
+  }
+  // 고른 낱말마다 뜻을 찾는다 (문장을 통째로 끌었으면 아는 단어를 모아 보여준다)
+  const hits = [], seen = new Set();
+  for (const tok of [t, ...t.split(/\s+/)]) {
+    const h = lookupAr(tok);
+    if (h && !seen.has(h.w.id + h.kind)) { seen.add(h.w.id + h.kind); hits.push(h); }
+    if (hits.length >= 4) break;
+  }
+  selPop.innerHTML = `<button class="sp-say">🔊 발음 듣기</button>` + (hits.length
+    ? hits.map(({ w, kind }) => `<div class="sp-hit" data-id="${w.id}">
+        <span class="arabic">${w.ar}</span><b>${w.ko}</b>
+        <small>${w.roman}${kind ? " · " + kind : ""}${w.en ? " · " + w.en : ""}</small></div>`).join("")
+    : `<div class="sp-none">단어장에 없는 말이에요 — 발음만 들을 수 있습니다</div>`);
+  selPop.style.display = "block";
+  const w = selPop.offsetWidth || 220, h = selPop.offsetHeight || 90;
+  selPop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + "px";
+  const above = r.top + window.scrollY - h - 8;
+  selPop.style.top = (above > window.scrollY + 4 ? above : r.top + window.scrollY + r.height + 8) + "px";
+}
+document.addEventListener("selectionchange", () => { if (!selText()) hideSelSpeak(); });
+document.addEventListener("mouseup", () => setTimeout(showSelSpeak, 0));
+document.addEventListener("touchend", () => setTimeout(showSelSpeak, 10));
+document.addEventListener("scroll", hideSelSpeak, true);
+
 // ── 문법 요소 색 구분 (한정 ال · 탄윈 · 쌍수/복수 어미)
 let hlOn = localStorage.getItem("hlOn") !== "0";
 function toggleHl() {
@@ -620,6 +718,7 @@ function renderCard() {
 }
 function setAutoSec(v) { autoSec = +v; renderCard(); }
 function flipCard() {
+  if (selText()) return;  // 텍스트를 고르는 중이면 카드는 그대로
   flipped = !flipped;
   $("#cardBack").style.display = flipped ? "block" : "none";
   const fb = document.getElementById("flipBtn");
