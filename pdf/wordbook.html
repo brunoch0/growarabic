@@ -40,6 +40,7 @@ document.getElementById("out").innerHTML = groups.map(p => `
       <div class="info">
         <span class="ko">${w.ko}</span> <span class="en">— ${w.en || ""}</span>
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
+        ${w.pl ? `<div class="rm">복수 <span style="font-family:'SF Arabic','Geeza Pro',serif;font-size:24px">${w.pl}</span> ${w.plRoman || ""}</div>` : ""}
         ${w.note ? `<div class="note">💡 ${w.note}</div>` : ""}
       </div>
     </div>`).join("")}`).join("");
