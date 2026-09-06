@@ -576,6 +576,7 @@ function renderCard() {
     <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
     <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
     ${w.fem ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형: <span class="arabic">${hl(w.fem)}</span> ${w.femRoman}</div>` : ""}
+    ${w.pl ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();speak('${w.pl.replace(/'/g, "\\'")}','ar-SA',0.85)">🔊 복수형: <span class="arabic">${hl(w.pl)}</span> ${w.plRoman || ""}</div>` : ""}
     ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${hl(w.ex)}</span></div>` : ""}
     ${w.note ? `<div class="note-line">💡 ${w.note}</div>` : ""}`;
   $("#main").innerHTML = `
@@ -884,7 +885,7 @@ views.lesson = (secId) => {
         <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">
           <div class="arabic">${hl(w.ar)}${w.fem ? ` / ${hl(w.fem)}` : ""}</div>
           <div class="kp">${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en || ""}</span></div>
-          <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}</div>
+          <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.pl ? ` · 복수 ${w.plRoman || ""}` : ""}</div>
           ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
         </div>`).join("")}` : ""}
     ${exs.length ? `
@@ -1053,6 +1054,7 @@ views.list = (filter) => {
         <div class="arabic">${hl(w.ar)}${w.fem ? ` / ${hl(w.fem)}` : ""}</div>
         <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
+        ${w.pl ? `<div class="rm">복수 <span class="arabic" style="font-size:22px">${hl(w.pl)}</span> ${w.plRoman || ""}</div>` : ""}
         ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">🔊 ${w.fem ? "남성형" : "발음"}</button>
