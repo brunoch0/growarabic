@@ -308,7 +308,7 @@ function showSelSpeak() {
       const hit = e.target.closest ? e.target.closest(".sp-hit") : null;
       if (hit) { const w = byId[hit.dataset.id]; if (w) sayAr(w.id, w.ar); return; }
       const sel = selText();
-      if (sel) { stopSpeak(); speak(sel, "ar-SA", 0.8); }  // 조각은 녹음이 없어 브라우저 TTS
+      if (sel) sayLine(sel);  // 조각은 녹음이 없어 브라우저 TTS
     };
     document.body.appendChild(selPop);
   }
@@ -354,6 +354,7 @@ const HL_LEGEND = [
 ];
 function hlLegend() {
   return `<div class="hl-legend">${HL_LEGEND.map(([k, t]) => `<span><i class="hl-${k}">■</i>${t}</span>`).join("")}
+    <button data-rate onclick="cycleRate()">${rateLabel()}</button>
     <button onclick="toggleHl()">${hlOn ? "색 끄기" : "색 켜기"}</button></div>`;
 }
 // 아랍어 문자열에 문법 요소 색을 입힌다 (표시 전용 — 원문은 그대로 둔다)
@@ -381,6 +382,17 @@ function hl(text) {
     return pre + w + suf;
   }).join(" ");
 }
+// ── 읽어주는 속도 (녹음은 재생속도, TTS는 발화속도에 같이 걸린다)
+const RATES = [1, 0.85, 0.7, 0.6];
+const getRate = () => { const r = parseFloat(localStorage.getItem("arRate")); return RATES.includes(r) ? r : 1; };
+const rateLabel = () => { const r = getRate(); return r === 1 ? "🔊 속도 보통" : `🐢 속도 ${r}배`; };
+function cycleRate() {
+  localStorage.setItem("arRate", RATES[(RATES.indexOf(getRate()) + 1) % RATES.length]);
+  document.querySelectorAll("[data-rate]").forEach(b => b.textContent = rateLabel());
+}
+// 문장·구절 읽기: 통째 녹음이 없으니 브라우저 TTS로 읽되 속도 설정을 따른다
+const sayLine = (text) => { stopSpeak(); speak(text, "ar-SA", 0.85 * getRate()); };
+
 // 아랍어 발음: 선택한 보이스의 녹음 파일 → grady 폴백 → 브라우저 TTS 폴백
 const VOICES = [
   { id: "grady", label: "1번 · 남성 (Grady)" },
@@ -389,23 +401,25 @@ const VOICES = [
   { id: "soraya", label: "4번 · 여성 (Soraya)" },
 ];
 const getVoice = () => localStorage.getItem("voice") || "grady";
-function sayAr(id, text, rate = 0.85, onend, voiceOv) {
+function sayAr(id, text, rate = 0.85, onend, voiceOv, noScale) {
   stopSpeak();
+  const r = noScale ? rate : rate * getRate();
+  const pb = Math.max(0.5, r / 0.85);  // 0.5 아래로는 브라우저가 소리를 죽인다
   if (typeof AUDIO !== "undefined" && AUDIO.has(id)) {
     const a = new Audio(`audio/${voiceOv || getVoice()}/${id}.mp3`);
-    a.playbackRate = rate / 0.85;
+    a.playbackRate = pb;
     curAudio = a;
     if (onend) a.onended = () => onend();
     a.onerror = () => {
       const g = new Audio(`audio/grady/${id}.mp3`);
-      g.playbackRate = rate / 0.85;
+      g.playbackRate = pb;
       curAudio = g;
       if (onend) g.onended = () => onend();
-      g.onerror = () => speak(text, "ar-SA", rate, onend);
+      g.onerror = () => speak(text, "ar-SA", r, onend);
       g.play();
     };
     a.play();
-  } else speak(text, "ar-SA", rate, onend);
+  } else speak(text, "ar-SA", r, onend);
 }
 // 한국어 뜻 발음: 전용 녹음(Hana) → 브라우저 TTS 폴백
 function sayKo(id, text, onend) {
@@ -960,7 +974,7 @@ views.lesson = (secId) => {
     <div class="rule-box">${s.rule}</div>
     ${hlLegend()}
     ${s.rows ? `<div class="pattern-set">${s.rows.map(r => `
-      <div class="pattern-row" style="cursor:pointer" onclick="speak('${r.ar.replace(/'/g, "\\'").replace(/ → /g, " ")}','ar-SA',0.85)">
+      <div class="pattern-row" style="cursor:pointer" onclick="sayLine('${r.ar.replace(/'/g, "\\'").replace(/ → /g, " ")}')">
         <div class="desc"><b>${r.ko}</b><span>${r.roman}${r.note ? "<br>" + r.note : ""}</span></div>
         <div class="arabic" style="font-size:30px">${hl(r.ar)}</div>
       </div>`).join("")}</div>` : ""}
@@ -968,13 +982,13 @@ views.lesson = (secId) => {
       <div class="pattern-set">
         <h3>${p.noun} + ${p.adj}${p.femNote ? ` <span style="color:var(--accent)">· ${p.femNote}</span>` : ""}</h3>
         ${p.forms.map(f => `
-          <div class="pattern-row" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
+          <div class="pattern-row" onclick="sayLine('${f.ar.replace(/'/g, "\\'")}')" style="cursor:pointer">
             <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
             <div class="arabic">${hl(f.ar)}</div>
           </div>`).join("")}
       </div>`; }).join("")}
     ${s.hal ? `<div class="pattern-set">${HAL_ITEMS.map(h => `
-      <div class="pattern-row" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">
+      <div class="pattern-row" onclick="sayLine('${h.q.replace(/'/g, "\\'")}')" style="cursor:pointer">
         <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}</span></div>
         <div class="arabic">${hl(h.q)}</div>
       </div>`).join("")}</div>` : ""}
@@ -990,7 +1004,7 @@ views.lesson = (secId) => {
     ${exs.length ? `
       <h2 style="font-size:16px;color:var(--sub);margin:20px 4px 8px">이 절의 문장 (${exs.length})</h2>
       ${exs.map(e => `
-        <div class="phrase-card" onclick="speak('${e.ar.replace(/'/g, "\\'")}','ar-SA',0.85)">
+        <div class="phrase-card" onclick="sayLine('${e.ar.replace(/'/g, "\\'")}')">
           <div class="arabic" style="font-size:30px">${hl(e.ar)}</div>
           <div class="kp">${e.ko}</div>
           <div class="rm">${e.roman}</div>
@@ -1037,7 +1051,7 @@ views.patterns = () => {
         ${p.forms.map(f => `
           <div class="pattern-row">
             <div class="desc"><b>${f.ko}</b><span>${f.type}<br>${f.roman}</span></div>
-            <div class="arabic" onclick="speak('${f.ar.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${hl(f.ar)}</div>
+            <div class="arabic" onclick="sayLine('${f.ar.replace(/'/g, "\\'")}')" style="cursor:pointer">${hl(f.ar)}</div>
           </div>`).join("")}
       </div>`).join("")}
     <div class="pattern-set">
@@ -1045,7 +1059,7 @@ views.patterns = () => {
       ${HAL_ITEMS.map(h => `
         <div class="pattern-row">
           <div class="desc"><b>${h.qKo}</b><span>${h.qRoman}${h.yes ? `<br>답: ${h.yesRoman || ""}` : ""}</span></div>
-          <div class="arabic" onclick="speak('${h.q.replace(/'/g, "\\'")}','ar-SA',0.85)" style="cursor:pointer">${hl(h.q)}</div>
+          <div class="arabic" onclick="sayLine('${h.q.replace(/'/g, "\\'")}')" style="cursor:pointer">${hl(h.q)}</div>
         </div>`).join("")}
     </div>
     <div class="controls"><button class="primary" onclick="startQuiz('definite')">이 패턴으로 퀴즈 풀기</button></div>`;
@@ -1116,11 +1130,11 @@ function driveStep() {
   sayKo(it.id, ko, () => next(step2, 500));
   function step2() {
     driveShow("아랍어", it.ar, "", true);
-    sayAr(it.id, it.ar, rate, () => next(step3, 600));
+    sayAr(it.id, it.ar, rate, () => next(step3, 600), null, true);
   }
   function step3() {
     driveShow("아랍어 한 번 더", it.ar, it.koPron || "", true);
-    sayAr(it.id, it.ar, rate, () => next(step4, 500));
+    sayAr(it.id, it.ar, rate, () => next(step4, 500), null, true);
   }
   function step4() {
     driveShow("발음", it.roman, it.koPron || "", false);
@@ -1337,7 +1351,7 @@ function delWord(id) {
 
 // ── 회화 표현 목록
 views.phrases = () => {
-  $("#main").innerHTML = PHRASES.map(p => `
+  $("#main").innerHTML = hlLegend() + PHRASES.map(p => `
     <div class="phrase-card" onclick="sayAr('${p.id}','${p.ar.replace(/'/g, "\\'")}')">
       <div class="arabic">${hl(p.ar)}</div>
       <div class="kp">${p.koPron} <span style="font-weight:400;font-size:15px">— ${p.ko}</span></div>

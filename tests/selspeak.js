@@ -38,7 +38,8 @@ global.addEventListener = () => {};
 global.matchMedia = window.matchMedia;
 global.localStorage = { _d: {}, getItem(k) { return this._d[k] ?? null; }, setItem(k, v) { this._d[k] = String(v); }, removeItem(k) { delete this._d[k]; } };
 global.history = { replaceState() {}, pushState() {} };
-global.Audio = function () { return { play() {}, pause() {}, style: {} }; };
+let lastAudio = null;
+global.Audio = function (src) { lastAudio = { src, play() {}, pause() {}, style: {} }; return lastAudio; };
 global.navigator = { userAgent: "node" };
 global.speechSynthesis = { speak() {}, cancel() {}, getVoices: () => [] };
 window.speechSynthesis = global.speechSynthesis;
@@ -100,7 +101,7 @@ t("모르는 말이어도 발음 버튼은 남음", /sp-say/.test(pop().innerHTM
 
 // 7) 발음 버튼을 누르면 고른 텍스트가 그대로 TTS로 간다
 let spoken = null;
-global.speechSynthesis.speak = window.speechSynthesis.speak = (u) => { spoken = u.text; };
+window.speechSynthesis.speak = global.speechSynthesis.speak = (u) => { spoken = u.text; };
 sel("بَيْتٌ كَبِيرٌ");
 pop().onclick({ stopPropagation() {}, target: { closest: () => null } });
 t("발음 버튼 → 고른 조각만 읽음", spoken === "بَيْتٌ كَبِيرٌ", JSON.stringify(spoken));
@@ -128,6 +129,62 @@ t("선택 없으면 정상적으로 뒤집힘", flipped !== before, before + "�
 
 // 11) 원문은 건드리지 않는다 (표시용만)
 t("VOCAB 원문 그대로", VOCAB.find(w => w.id === "bayt").ar === "بَيْتٌ");
+
+// ── 읽어주는 속도
+let uttered = null;
+// 앞의 "뜻 줄 클릭" 검증에서 Audio 스텁을 갈아끼웠으므로 다시 계측용으로 설치한다
+global.Audio = function (src) { lastAudio = { src, play() {}, pause() {}, style: {} }; return lastAudio; };
+window.speechSynthesis.speak = global.speechSynthesis.speak = (u) => { uttered = u; };
+
+localStorage.setItem("arRate", "1");
+t("기본 속도는 보통", getRate() === 1 && rateLabel() === "🔊 속도 보통", rateLabel());
+
+cycleRate();
+t("한 번 누르면 0.85배", getRate() === 0.85, String(getRate()));
+t("라벨도 바뀜", /0\.85배/.test(rateLabel()), rateLabel());
+cycleRate(); t("두 번 → 0.7배", getRate() === 0.7, String(getRate()));
+cycleRate(); t("세 번 → 0.6배", getRate() === 0.6, String(getRate()));
+cycleRate(); t("네 번 → 다시 보통", getRate() === 1, String(getRate()));
+
+// 문장 읽기에 속도가 걸린다
+localStorage.setItem("arRate", "0.6");
+uttered = null; sayLine("هَذَا بَيْتٌ كَبِيرٌ");
+t("문장: 느리게 설정하면 발화속도 내려감", uttered && Math.abs(uttered.rate - 0.85 * 0.6) < 1e-9, uttered && String(uttered.rate));
+t("문장: 원문 그대로 읽음", uttered && uttered.text === "هَذَا بَيْتٌ كَبِيرٌ");
+localStorage.setItem("arRate", "1");
+uttered = null; sayLine("هَذَا بَيْتٌ");
+t("문장: 보통이면 0.85", uttered && Math.abs(uttered.rate - 0.85) < 1e-9, uttered && String(uttered.rate));
+
+// 녹음 재생에도 걸린다
+localStorage.setItem("arRate", "0.7");
+lastAudio = null; sayAr("bayt", "بَيْتٌ");
+t("녹음: 느리게 설정하면 재생속도 내려감", lastAudio && Math.abs(lastAudio.playbackRate - 0.7) < 1e-9, lastAudio && String(lastAudio.playbackRate));
+localStorage.setItem("arRate", "1");
+lastAudio = null; sayAr("bayt", "بَيْتٌ");
+t("녹음: 보통이면 등속", lastAudio && lastAudio.playbackRate === 1, lastAudio && String(lastAudio.playbackRate));
+
+// 너무 느려 소리가 죽는 구간은 막는다
+localStorage.setItem("arRate", "0.6");
+lastAudio = null; sayAr("bayt", "بَيْتٌ", 0.5);
+t("재생속도 0.5 아래로 안 내려감", lastAudio && lastAudio.playbackRate >= 0.5, lastAudio && String(lastAudio.playbackRate));
+
+// 운전 모드는 자체 속도가 있어 전역 배속을 또 걸지 않는다
+localStorage.setItem("arRate", "0.6");
+lastAudio = null; sayAr("bayt", "بَيْتٌ", 0.85, null, null, true);
+t("운전 모드는 전역 배속 제외", lastAudio && lastAudio.playbackRate === 1, lastAudio && String(lastAudio.playbackRate));
+localStorage.setItem("arRate", "1");
+
+// 범례 바에 속도 버튼이 있다
+t("범례 바에 속도 버튼", /data-rate/.test(hlLegend()) && /속도/.test(hlLegend()));
+
+// 드래그 팝업의 발음도 같은 속도를 따른다
+localStorage.setItem("arRate", "0.6");
+sel("بَيْتٌ كَبِيرٌ");
+uttered = null;
+pop().onclick({ stopPropagation() {}, target: { closest: () => null } });
+t("드래그 발음도 속도 반영", uttered && Math.abs(uttered.rate - 0.85 * 0.6) < 1e-9, uttered && String(uttered.rate));
+localStorage.setItem("arRate", "1");
+
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
 if (bad.length) { console.log("\nFAIL:"); bad.forEach(x => console.log("  \u2717 " + x)); process.exit(1); }
