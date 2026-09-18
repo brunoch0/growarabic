@@ -210,6 +210,43 @@ t("화면을 옮겨도 설정은 유지", getRate() === 0.85 && fab().className 
 localStorage.setItem("arRate", "1");
 
 
+// ── 형태별 보기 / 변경 내역 / 복수형 퀴즈
+t("복수형 47개 전부 plPat 있음", VOCAB.filter(w=>w.pl).every(w=>w.plPat), String(VOCAB.filter(w=>w.pl&&!w.plPat).map(w=>w.id)));
+const pats=new Set(VOCAB.filter(w=>w.pl).map(w=>w.plPat));
+t("모든 plPat 이 화면 순서에 들어있음", [...pats].every(p=>PL_PAT_ORDER.includes(p)), [...pats].filter(p=>!PL_PAT_ORDER.includes(p)).join(","));
+t("모든 plPat 에 설명 있음", [...pats].every(p=>PL_PAT_NOTE[p]), [...pats].filter(p=>!PL_PAT_NOTE[p]).join(","));
+
+currentView="forms"; views.forms();
+const fh=ELS["#main"].innerHTML;
+t("형태별 보기: 단어 수 표시", /47개/.test(fh));
+t("형태별 보기: مَفَاعِلُ 묶음 나옴", fh.indexOf("مَفَاعِلُ")>=0);
+t("형태별 보기: 학교→학교들 한 줄", /مَدَارِسُ/.test(fh));
+t("형태별 보기: 줄마다 복수형 녹음 재생", /sayAr\('madrasa_pl'/.test(fh));
+t("형태별 보기: 퀴즈 버튼", /startQuiz\('pl'\)/.test(fh));
+
+// 변경 내역
+localStorage.removeItem("seenVer");
+ELS.verBtn=mkEl("button"); ELS.verNum=mkEl("span"); ELS["#main"]=mkEl("div");
+syncVerBadge();
+t("처음엔 새 버전 표시", ELS.verBtn.className==="new", ELS.verBtn.className);
+t("버전 숫자 표시", ELS.verNum.textContent===VERSION, ELS.verNum.textContent);
+currentView="whatsnew"; views.whatsnew();
+const ch=ELS["#main"].innerHTML;
+t("변경 내역: 최신 항목에 NEW", /cl-new/.test(ch));
+t("변경 내역: 항목 5개 전부", (ch.match(/cl-head/g)||[]).length===CHANGELOG.length, String((ch.match(/cl-head/g)||[]).length));
+syncVerBadge();
+t("보고 나면 점이 사라짐", ELS.verBtn.className==="", ELS.verBtn.className);
+t("본 버전이 저장됨", localStorage.getItem("seenVer")===VERSION);
+
+// 복수형 퀴즈
+startQuiz("pl");
+t("복수형 퀴즈 12문제", quizState.items.length===12, String(quizState.items.length));
+t("복수형 퀴즈는 복수형 있는 단어만", quizState.items.every(w=>w.pl));
+renderQuiz();
+const qh=ELS["#main"].innerHTML;
+t("복수형 퀴즈: 보기 4개", (qh.match(/class="choice"/g)||[]).length>=4, String((qh.match(/class="choice"/g)||[]).length));
+
+
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
 if (bad.length) { console.log("\nFAIL:"); bad.forEach(x => console.log("  \u2717 " + x)); process.exit(1); }
 console.log(`\n${ok.length}/${ok.length} \ud1b5\uacfc`);

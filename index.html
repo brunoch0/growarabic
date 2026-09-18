@@ -42,6 +42,41 @@
     font-weight: 600; line-height: 1.5;
     -webkit-user-select: text; user-select: text;
   }
+  /* 버전 배지 — 새 버전이면 점이 붙는다 */
+  #verBtn {
+    margin-left: auto; position: relative; font-family: inherit; font-size: 12px; font-weight: 600;
+    padding: 5px 10px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); color: var(--sub); cursor: pointer; white-space: nowrap;
+  }
+  #verBtn.new { border-color: var(--accent); color: var(--accent); }
+  #verDot { display: none; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--wrong); }
+  #verBtn.new #verDot { display: block; }
+  #menuBtn { margin-left: 8px !important; }
+  /* 변경 내역 */
+  .cl { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin-bottom: 12px; overflow: hidden; }
+  .cl.fresh { border-color: var(--accent); }
+  .cl-head { display: flex; align-items: baseline; gap: 10px; padding: 12px 16px; background: var(--accent-soft); }
+  .cl-head b { font-size: 16px; }
+  .cl-head .v { font-size: 12px; font-weight: 700; color: var(--accent); }
+  .cl-head .d { margin-left: auto; font-size: 12px; color: var(--sub); }
+  .cl ul { margin: 0; padding: 12px 16px 14px 32px; }
+  .cl li { font-size: 15px; line-height: 1.7; margin-bottom: 6px; }
+  .cl li:last-child { margin-bottom: 0; }
+  .cl-new { display: inline-block; font-size: 11px; font-weight: 700; color: #fff;
+    background: var(--wrong); border-radius: 8px; padding: 1px 7px; }
+
+  /* 형태별 보기 */
+  .form-row {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; border-top: 1px solid var(--line); cursor: pointer;
+  }
+  .form-row:hover { background: var(--accent-soft); }
+  .form-row .f-sg { font-size: 24px; }
+  .form-row .f-to { color: var(--sub); font-size: 13px; }
+  .form-row .f-pl { font-size: 24px; color: var(--accent); font-weight: 700; }
+  .form-row .f-ko { margin-left: auto; font-size: 14px; color: var(--sub); }
+
   /* 읽는 속도: 문장을 읽는 화면에 계속 떠 있는 버튼 */
   #rateFab {
     display: none; position: fixed; right: 16px; bottom: 18px; z-index: 40;
@@ -207,6 +242,7 @@
   <h1 onclick="go('home')">🕌 GrowArabic</h1>
   <span class="crumb" id="crumb"></span>
   <nav id="topNav"></nav>
+  <button id="verBtn" onclick="go('whatsnew')" title="변경 내역">v<span id="verNum"></span><i id="verDot"></i></button>
   <button id="menuBtn" onclick="toggleMenu(event)" style="margin-left:auto;font-size:22px;background:none;border:none;cursor:pointer;padding:4px 8px;color:var(--ink)">☰</button>
   <div id="dropMenu" style="display:none;position:absolute;top:52px;right:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:20;min-width:190px;overflow:hidden"></div>
 </header>
@@ -363,6 +399,14 @@ const HL_LEGEND = [
   ["dual", "쌍수 어미 ـَانِ ـَيْنِ"],
   ["plural", "복수 어미 ـُونَ ـِينَ ـَاتٌ"],
 ];
+// ── 변경 내역: 마지막으로 본 버전과 다르면 헤더 배지에 점을 띄운다
+const seenVer = () => localStorage.getItem("seenVer") || "";
+function syncVerBadge() {
+  const b = document.getElementById("verBtn");
+  if (!b || typeof VERSION === "undefined") return;
+  document.getElementById("verNum").textContent = VERSION;
+  b.className = seenVer() === VERSION ? "" : "new";
+}
 function hlLegend() {
   return `<div class="hl-legend">${HL_LEGEND.map(([k, t]) => `<span><i class="hl-${k}">■</i>${t}</span>`).join("")}
     <button data-rate onclick="cycleRate()">${rateLabel()}</button>
@@ -403,7 +447,7 @@ function cycleRate() {
   syncRateFab();
 }
 // 문장을 눌러 듣는 화면에서는 속도 버튼을 화면에 띄워둔다 (스크롤해도 따라온다)
-const RATE_FAB_VIEWS = ["lesson", "patterns", "phrases", "list", "cards", "quiz"];
+const RATE_FAB_VIEWS = ["lesson", "patterns", "phrases", "list", "forms", "cards", "quiz"];
 function syncRateFab() {
   let f = document.getElementById("rateFab");
   if (!f) {
@@ -518,11 +562,12 @@ function go(name, arg, fromHistory) {
   if (typeof clearCardTimers === "function") clearCardTimers();
   // 브라우저 뒤로/앞으로 가기 지원 (file:// 등 pushState 불가 환경은 조용히 무시)
   if (!fromHistory) try { history.pushState({ name, arg }, "", "#" + name); } catch (e) {}
-  const labels = { home: "", lesson: "교재 순서 복습", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가" };
+  const labels = { home: "", lesson: "교재 순서 복습", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가", whatsnew: "변경 내역", forms: "형태별 보기" };
   $("#crumb").textContent = labels[name] || "";
   renderTopNav();
   views[name](arg);
   syncRateFab();
+  syncVerBadge();
   window.scrollTo(0, 0);
 }
 window.addEventListener("popstate", (e) => {
@@ -557,6 +602,7 @@ const MENU_DEFS = {
   lesson: { name: "교재 순서 복습", html: "📘 교재 순서 복습 <small>제1과·제2과 목차대로</small>", action: "go('lesson')" },
   cards: { name: "단어 카드", html: "🃏 단어 카드 <small>큰 글씨 + 모음표시</small>", action: "go('cards')" },
   list: { name: "단어장 목록", html: "📖 단어장 목록 <small>전체 단어 쭉 보기</small>", action: "go('list')" },
+  forms: { name: "형태별 보기", html: "🔤 형태별 보기 <small>복수형을 어형별로 묶어서</small>", action: "go('forms')" },
   quiz: { name: "복습 퀴즈", html: "✍️ 복습 퀴즈 <small>뜻·성별·한정 맞히기</small>", action: "go('quiz')" },
   patterns: { name: "문법 패턴", html: "📐 문법 패턴 <small>형용사 3패턴 · هَلْ 의문문</small>", action: "go('patterns')" },
   drive: { name: "운전 모드", html: "🚗 운전 모드 <small>듣기 반복 (뜻→아랍어→발음)</small>", action: "go('drive')" },
@@ -565,7 +611,7 @@ const MENU_DEFS = {
   add: { name: "단어 추가", html: "➕ 단어 추가 <small>직접 수집한 단어 등록</small>", action: "go('add')" },
   settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
 };
-const DEFAULT_MENU = ["lesson", "cards", "list", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
+const DEFAULT_MENU = ["lesson", "cards", "list", "forms", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
 // 단어 추가는 아직 개발 중 — 로컬(file://)에서만 노출, 라이브에서는 숨김
 const DEV = location.protocol === "file:" || location.hostname === "localhost";
 function menuOrder() {
@@ -806,6 +852,7 @@ views.quiz = () => {
       <button onclick="startQuiz('definite')">📖 한정/비한정 구분</button>
       <button onclick="startQuiz('hal')">❓ هَلْ 의문문 만들기</button>
       <button onclick="startQuiz('sent2ko')">📜 문장 → 해석 맞추기</button>
+      <button onclick="startQuiz('pl')">🔤 복수형 맞히기</button>
       <button class="wide" onclick="startQuiz('build')">🧩 해석 → 문장 만들기 <small>단어 타일을 순서대로 탭</small></button>
     </div>`;
 };
@@ -817,6 +864,7 @@ function startQuiz(mode, sec) {
   else if (mode === "hal") items = shuffle([...HAL_ITEMS]);
   else if (mode === "sent2ko") items = shuffle([...exPool]).slice(0, sec ? 20 : 10);
   else if (mode === "build") items = shuffle(exPool.filter(e => e.ar.split(" ").length >= 2)).slice(0, sec ? 20 : 8);
+  else if (mode === "pl") items = shuffle(VOCAB.filter(w => w.pl)).slice(0, 12);
   else items = shuffle(VOCAB.filter(w => w.pos !== "이름")).slice(0, 12);
   quizState = { mode, items, idx: 0, right: 0, wrongs: [], sec };
   currentView = "quiz";
@@ -865,6 +913,14 @@ function renderQuiz() {
     choices = shuffle([it.ar, ...shuffle(VOCAB.filter(w => w.id !== it.id)).slice(0, 3).map(w => w.ar)]);
     choices = choices.map(c => `<span class="arabic">${hl(c)}</span>`);
     correct = `<span class="arabic">${hl(correct)}</span>`;
+  } else if (mode === "pl") {
+    qHtml = `<div class="prompt">이 단어의 복수형은? (${it.ko})</div><div class="arabic">${hl(it.ar)}</div>`;
+    const pool = VOCAB.filter(w => w.pl && w.id !== it.id);
+    const same = shuffle(pool.filter(w => w.plPat === it.plPat)).slice(0, 1);
+    const diff = shuffle(pool.filter(w => w.plPat !== it.plPat)).slice(0, 3 - same.length);
+    choices = shuffle([it.pl, ...same.concat(diff).map(w => w.pl)]).map(c => `<span class="arabic">${hl(c)}</span>`);
+    correct = `<span class="arabic">${hl(it.pl)}</span>`;
+    why = `${it.plPat} 어형` + (it.plRoman ? ` · ${it.plRoman}` : "");
   } else if (mode === "gender") {
     qHtml = `<div class="prompt">이 명사의 성은? (${it.ko})</div><div class="arabic">${hl(it.ar)}</div>`;
     correct = it.gender === "f" ? "여성" : "남성";
@@ -1172,6 +1228,72 @@ function driveStep() {
 }
 
 // ── 단어장 목록 (전체 스크롤 + 카테고리 필터)
+views.whatsnew = () => {
+  const fresh = seenVer();
+  $("#main").innerHTML = `
+    <p class="hint" style="margin:0 0 14px">지금 쓰는 버전은 <b>v${VERSION}</b> 입니다. 새로 바뀐 것부터 보여드립니다.</p>` +
+    CHANGELOG.map((c, i) => `
+      <div class="cl${c.v !== fresh && i === 0 ? " fresh" : ""}">
+        <div class="cl-head">
+          <span class="v">v${c.v}</span><b>${c.title}</b>
+          ${c.v !== fresh && i === 0 ? `<span class="cl-new">NEW</span>` : ""}
+          <span class="d">${c.date}</span>
+        </div>
+        <ul>${c.items.map(t => `<li>${t}</li>`).join("")}</ul>
+      </div>`).join("");
+  localStorage.setItem("seenVer", VERSION);
+  syncVerBadge();
+};
+
+// ── 형태별 보기: 복수형을 교재 2과의 어형별로 묶는다 (낱개 47개 → 틀 10여 개)
+const PL_PAT_ORDER = ["فِعَالٌ", "مَفَاعِلُ", "أَفْعَالٌ", "فُعَلَاءُ", "أَفْعِلَاءُ", "فَعَالِيلُ",
+  "فُعُولٌ", "فُعْلٌ", "أَفْعُلٌ", "فُعْلَانٌ", "ـَاتٌ", "ـُونَ", "그 외"];
+const PL_PAT_NOTE = {
+  "فِعَالٌ": "가장 흔한 틀. 형용사도 이 틀을 자주 쓴다",
+  "مَفَاعِلُ": "مَـ 로 시작하는 장소 명사는 전부 이 틀",
+  "أَفْعَالٌ": "أَ 를 앞에 붙이고 가운데를 늘린다",
+  "فُعَلَاءُ": "사람을 가리키는 형용사·직업",
+  "أَفْعِلَاءُ": "사람 형용사 중 أَ 로 시작하는 쪽",
+  "فَعَالِيلُ": "4자음 단어(صُنْدُوقٌ·شُبَّاكٌ)의 복수",
+  "فُعُولٌ": "3자음 명사에 흔하다",
+  "فُعْلٌ": "짧게 줄어드는 틀",
+  "أَفْعُلٌ": "소수 명사만",
+  "فُعْلَانٌ": "ـَانٌ 으로 끝난다",
+  "ـَاتٌ": "여성 규칙 복수 — 어미만 붙인다",
+  "ـُونَ": "남성 규칙 복수 — 사람에게만",
+  "그 외": "틀에서 벗어나는 것들. 통째로 외운다",
+};
+views.forms = () => {
+  const pls = VOCAB.filter(w => w.pl);
+  const g = {};
+  pls.forEach(w => (g[w.plPat] = g[w.plPat] || []).push(w));
+  const shown = PL_PAT_ORDER.filter(p => g[p]);
+  $("#main").innerHTML = `
+    <p class="hint" style="margin:0 0 12px">
+      복수형이 있는 단어 <b>${pls.length}개</b>가 <b>틀 ${shown.length}개</b>로 묶입니다.
+      낱개로 외우지 말고 틀을 잡으면, 새 단어가 나와도 복수형을 추측할 수 있습니다.
+    </p>` + hlLegend() + shown.map(pat => `
+    <div class="cl" style="margin-bottom:14px">
+      <div class="cl-head">
+        <span class="arabic" style="font-size:26px;color:var(--accent);font-weight:700">${pat}</span>
+        <b style="font-weight:400;font-size:14px;color:var(--sub)">${PL_PAT_NOTE[pat] || ""}</b>
+        <span class="d">${g[pat].length}개</span>
+      </div>
+      <div>
+        ${g[pat].map(w => `
+          <div class="form-row" onclick="sayAr('${w.id}_pl','${w.pl.replace(/'/g, "\'")}')">
+            <span class="arabic f-sg">${hl(w.ar)}</span>
+            <span class="f-to">→</span>
+            <span class="arabic f-pl">${hl(w.pl)}</span>
+            <span class="f-ko">${w.ko}</span>
+          </div>`).join("")}
+      </div>
+    </div>`).join("") + `
+    <div style="text-align:center;margin-top:18px">
+      <button class="bigbtn primary" onclick="startQuiz('pl')">🧩 복수형 맞히기 퀴즈</button>
+    </div>`;
+};
+
 views.list = (filter) => {
   const order = ["명사", "형용사", "분사", "집합명사", "대명사", "지시어", "전치사", "부사", "의문사", "답변", "동사", "지명", "구", "표현", "문법용어", "이름"];
   const starSet = getSet("starred"), stats = getStats();
