@@ -12,7 +12,7 @@ let selection = { ranges: [], isCollapsed: true, text: "",
   toString() { return this.text; } };
 
 const mkEl = (tag) => ({
-  tagName: tag, id: "", className: "", textContent: "", innerHTML: "",
+  tagName: tag, id: "", className: "", textContent: "", innerHTML: "", dataset: {},
   style: {}, children: [], offsetWidth: 110, offsetHeight: 36,
   appendChild(c) { this.children.push(c); }, remove() {},
   addEventListener() {}, getBoundingClientRect: () => ({ left: 100, top: 200, width: 300, height: 50 }),
@@ -183,6 +183,30 @@ sel("بَيْتٌ كَبِيرٌ");
 uttered = null;
 pop().onclick({ stopPropagation() {}, target: { closest: () => null } });
 t("드래그 발음도 속도 반영", uttered && Math.abs(uttered.rate - 0.85 * 0.6) < 1e-9, uttered && String(uttered.rate));
+localStorage.setItem("arRate", "1");
+
+
+// ── 화면에 떠 있는 속도 버튼
+const fab = () => document.getElementById("rateFab");
+localStorage.setItem("arRate", "1");
+
+currentView = "lesson"; syncRateFab();
+t("교재 복습에서 떠 있음", fab() && fab().style.display === "block", fab() && fab().style.display);
+t("떠 있는 버튼도 속도 라벨", /속도/.test(fab().textContent), fab().textContent);
+t("보통일 땐 강조 없음", fab().className === "", fab().className);
+
+fab().onclick();
+t("눌러서 느려짐", getRate() === 0.85, String(getRate()));
+t("느릴 땐 강조 표시", fab().className === "slow", fab().className);
+t("라벨도 따라 바뀜", /0\.85배/.test(fab().textContent), fab().textContent);
+
+currentView = "home"; syncRateFab();
+t("홈에서는 안 뜸", fab().style.display === "none", fab().style.display);
+currentView = "drive"; syncRateFab();
+t("운전 모드에서는 안 뜸 (자체 속도 있음)", fab().style.display === "none", fab().style.display);
+currentView = "phrases"; syncRateFab();
+t("회화에서도 뜸", fab().style.display === "block", fab().style.display);
+t("화면을 옮겨도 설정은 유지", getRate() === 0.85 && fab().className === "slow", String(getRate()));
 localStorage.setItem("arRate", "1");
 
 

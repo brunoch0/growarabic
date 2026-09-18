@@ -42,6 +42,17 @@
     font-weight: 600; line-height: 1.5;
     -webkit-user-select: text; user-select: text;
   }
+  /* 읽는 속도: 문장을 읽는 화면에 계속 떠 있는 버튼 */
+  #rateFab {
+    display: none; position: fixed; right: 16px; bottom: 18px; z-index: 40;
+    padding: 11px 17px; border-radius: 24px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    box-shadow: 0 3px 14px rgba(0,0,0,.18); cursor: pointer; white-space: nowrap;
+  }
+  #rateFab.slow { border-color: var(--accent); background: var(--accent); color: #fff; }
+  @media (max-width: 420px) { #rateFab { right: 12px; bottom: 12px; padding: 10px 14px; font-size: 13px; } }
+
   /* 드래그한 부분 발음 + 뜻 찾기 */
   #selPop {
     display: none; position: absolute; z-index: 50; max-width: min(340px, 92vw);
@@ -389,6 +400,23 @@ const rateLabel = () => { const r = getRate(); return r === 1 ? "🔊 속도 보
 function cycleRate() {
   localStorage.setItem("arRate", RATES[(RATES.indexOf(getRate()) + 1) % RATES.length]);
   document.querySelectorAll("[data-rate]").forEach(b => b.textContent = rateLabel());
+  syncRateFab();
+}
+// 문장을 눌러 듣는 화면에서는 속도 버튼을 화면에 띄워둔다 (스크롤해도 따라온다)
+const RATE_FAB_VIEWS = ["lesson", "patterns", "phrases", "list", "cards", "quiz"];
+function syncRateFab() {
+  let f = document.getElementById("rateFab");
+  if (!f) {
+    f = document.createElement("button");
+    f.id = "rateFab";
+    f.dataset.rate = "";
+    f.title = "누를 때마다 천천히 → 더 천천히 → 보통";
+    f.onclick = cycleRate;
+    document.body.appendChild(f);
+  }
+  f.textContent = rateLabel();
+  f.className = getRate() === 1 ? "" : "slow";
+  f.style.display = RATE_FAB_VIEWS.includes(currentView) ? "block" : "none";
 }
 // 문장·구절 읽기: 통째 녹음이 없으니 브라우저 TTS로 읽되 속도 설정을 따른다
 const sayLine = (text) => { stopSpeak(); speak(text, "ar-SA", 0.85 * getRate()); };
@@ -494,6 +522,7 @@ function go(name, arg, fromHistory) {
   $("#crumb").textContent = labels[name] || "";
   renderTopNav();
   views[name](arg);
+  syncRateFab();
   window.scrollTo(0, 0);
 }
 window.addEventListener("popstate", (e) => {
