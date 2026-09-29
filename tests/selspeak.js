@@ -218,7 +218,7 @@ t("모든 plPat 에 설명 있음", [...pats].every(p=>PL_PAT_NOTE[p]), [...pats
 
 currentView="forms"; views.forms();
 const fh=ELS["#main"].innerHTML;
-t("형태별 보기: 단어 수 표시", /47개/.test(fh));
+t("형태별 보기: 단어 수 표시", new RegExp(VOCAB.filter(w=>w.pl).length+"개").test(fh), String(VOCAB.filter(w=>w.pl).length));
 t("형태별 보기: مَفَاعِلُ 묶음 나옴", fh.indexOf("مَفَاعِلُ")>=0);
 t("형태별 보기: 학교→학교들 한 줄", /مَدَارِسُ/.test(fh));
 t("형태별 보기: 줄마다 복수형 녹음 재생", /sayAr\('madrasa_pl'/.test(fh));
@@ -245,6 +245,36 @@ t("복수형 퀴즈는 복수형 있는 단어만", quizState.items.every(w=>w.p
 renderQuiz();
 const qh=ELS["#main"].innerHTML;
 t("복수형 퀴즈: 보기 4개", (qh.match(/class="choice"/g)||[]).length>=4, String((qh.match(/class="choice"/g)||[]).length));
+
+
+// ── 제3과
+const L3=LESSONS.find(l=>l.id==="L3");
+t("제3과 있음", !!L3);
+t("제3과 7절", L3.sections.length===7, String(L3.sections.length));
+t("절이 참조하는 단어가 전부 단어장에 있음",
+  L3.sections.flatMap(s=>s.words||[]).every(w=>VOCAB.some(v=>v.id===w)),
+  L3.sections.flatMap(s=>s.words||[]).filter(w=>!VOCAB.some(v=>v.id===w)).join(","));
+t("절이 선언한 sec 마다 예문이 있음",
+  L3.sections.filter(s=>s.sec).every(s=>EXAMPLES.some(e=>e.sec===s.sec)),
+  L3.sections.filter(s=>s.sec&&!EXAMPLES.some(e=>e.sec===s.sec)).map(s=>s.id).join(","));
+t("제3과 예문 69개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===69,
+  String(EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length));
+currentView="lesson"; views.lesson("L3.5");
+const lh=ELS["#main"].innerHTML;
+t("연결형 절이 열림", /연결형/.test(lh));
+t("연결형 규칙에 탄윈 설명", /탄윈/.test(lh));
+t("연결형 예시 بَيْتُ الرَّجُلِ", lh.indexOf("بَيْتُ الرَّجُلِ")>=0);
+views.lesson("L3.7");
+t("특정화 절에 비한정 예시", ELS["#main"].innerHTML.indexOf("حِذَاءُ طِفْلٍ")>=0);
+startQuiz("sent2ko","L3.6");
+t("연결형 절별 퀴즈", quizState.items.every(e=>e.sec==="L3.6"), String(quizState.items.length));
+// 새 단어 무결성
+const n3=VOCAB.filter(w=>w.date==="2026-09-30");
+t("신규 25개", n3.length===25, String(n3.length));
+t("신규 단어 전부 ar·ko·roman·pos 있음", n3.every(w=>w.ar&&w.ko&&w.roman&&w.pos),
+  n3.filter(w=>!(w.ar&&w.ko&&w.roman&&w.pos)).map(w=>w.id).join(","));
+t("복수형 있으면 plPat 도 있음", VOCAB.filter(w=>w.pl).every(w=>w.plPat),
+  VOCAB.filter(w=>w.pl&&!w.plPat).map(w=>w.id).join(","));
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
