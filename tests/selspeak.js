@@ -359,6 +359,47 @@ maybeShowWhatsNew(); t("그냥 닫았으면 다음에 또 뜸", popOpen());
 closeWhatsNew(); localStorage.setItem("seenVer",VERSION);
 
 
+// ── 어근별 보기
+const withRoot=VOCAB.filter(w=>w.root);
+t("어근 193개 단어에 붙음", withRoot.length===193, String(withRoot.length));
+t("어근 있으면 뜻풀이도 있음", withRoot.every(w=>w.rootKo), withRoot.filter(w=>!w.rootKo).map(w=>w.id).join(","));
+t("어근은 자음 사이 공백 형식", withRoot.every(w=>/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)),
+  withRoot.filter(w=>!/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)).map(w=>w.id+":"+w.root).join(","));
+t("같은 어근은 뜻풀이도 같음",
+  (()=>{const m={};return withRoot.every(w=>{if(m[w.root]&&m[w.root]!==w.rootKo)return false;m[w.root]=w.rootKo;return true;})})());
+t("대명사·전치사에는 어근 없음",
+  VOCAB.filter(w=>["대명사","전치사","의문사","답변","지시어"].includes(w.pos)).every(w=>!w.root));
+
+const G=rootGroups();
+t("어근 묶음이 큰 것부터", G[0].words.length>=G[G.length-1].words.length);
+t("ك ت ب 에 5개", G.find(g=>g.root==="ك ت ب").words.length===5, String(G.find(g=>g.root==="ك ت ب").words.length));
+
+currentView="roots"; localStorage.setItem("rootFilter","shared"); rootFilter="shared"; views.roots();
+const rh=ELS["#main"].innerHTML;
+t("어근 화면: 설명 문구", /어근/.test(rh));
+t("어근 화면: ك ت ب 묶음", rh.indexOf("ك ت ب")>=0);
+t("어근 화면: 도서관이 같이 나옴", /도서관/.test(rh));
+t("어근 화면: 줄을 누르면 발음", /sayAr\('kitaab'/.test(rh));
+t("어근 화면: 복수형도 같이", /مَكَاتِبُ/.test(rh));
+t("같은 어근끼리 필터는 1개짜리 제외", !/>1개</.test(rh));
+
+setRootFilter("all"); const rAll=ELS["#main"].innerHTML;
+t("전체 필터는 1개짜리도 포함", /1개/.test(rAll));
+t("필터가 저장됨", localStorage.getItem("rootFilter")==="all");
+
+views.roots("ك ت ب");
+const one=ELS["#main"].innerHTML;
+t("어근 하나만 보기", (one.match(/cl-head/g)||[]).length===1, String((one.match(/cl-head/g)||[]).length));
+t("어근 하나만 보기에 돌아가기 버튼", /go\('roots'\)/.test(one));
+
+// 카드 뒷면·단어장의 어근 칩
+deck=[VOCAB.find(w=>w.id==="kitaab")]; deckIdx=0; flipped=true;
+ELS.cardBack=mkEl("div"); renderCard();
+t("카드 뒷면에 어근 칩", /root-chip/.test(ELS["#main"].innerHTML));
+t("어근 칩을 누르면 어근 화면", /go\('roots','ك ت ب'\)/.test(ELS["#main"].innerHTML));
+setRootFilter("shared");
+
+
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
 if (bad.length) { console.log("\nFAIL:"); bad.forEach(x => console.log("  \u2717 " + x)); process.exit(1); }
 console.log(`\n${ok.length}/${ok.length} \ud1b5\uacfc`);

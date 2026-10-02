@@ -121,6 +121,25 @@
   }
   .tbl-note { font-size: 13px; color: var(--sub); margin: 8px 4px 0; }
 
+  /* 어근별 보기 */
+  .root-row {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; border-top: 1px solid var(--line); cursor: pointer;
+  }
+  .root-row:hover { background: var(--accent-soft); }
+  .root-row .rw-ar { font-size: 25px; }
+  .root-row .rw-ko { font-size: 15px; font-weight: 600; }
+  .root-row .rw-pos { font-size: 12px; color: var(--sub); }
+  .root-row .rw-forms { flex-basis: 100%; display: flex; gap: 14px; flex-wrap: wrap; margin-top: 2px; }
+  .root-row .rw-f { font-size: 13px; color: var(--sub); }
+  .root-row .rw-f .arabic { font-size: 19px; color: var(--ink); }
+  .root-row .rw-pat { font-style: normal; font-size: 13px; color: var(--accent); }
+  .root-chip {
+    font-family: "SF Arabic", "Geeza Pro", serif; font-size: 15px; letter-spacing: 3px;
+    color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent);
+    border-radius: 12px; padding: 2px 10px; cursor: pointer; direction: rtl; display: inline-block;
+  }
+
   /* 형태별 보기 */
   .form-row {
     display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
@@ -503,7 +522,7 @@ function cycleRate() {
   syncRateFab();
 }
 // 문장을 눌러 듣는 화면에서는 속도 버튼을 화면에 띄워둔다 (스크롤해도 따라온다)
-const RATE_FAB_VIEWS = ["lesson", "patterns", "phrases", "list", "forms", "cards", "quiz"];
+const RATE_FAB_VIEWS = ["lesson", "patterns", "phrases", "list", "forms", "roots", "cards", "quiz"];
 function syncRateFab() {
   let f = document.getElementById("rateFab");
   if (!f) {
@@ -618,7 +637,7 @@ function go(name, arg, fromHistory) {
   if (typeof clearCardTimers === "function") clearCardTimers();
   // 브라우저 뒤로/앞으로 가기 지원 (file:// 등 pushState 불가 환경은 조용히 무시)
   if (!fromHistory) try { history.pushState({ name, arg }, "", "#" + name); } catch (e) {}
-  const labels = { home: "", lesson: "교재 순서 복습", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가", whatsnew: "변경 내역", forms: "형태별 보기" };
+  const labels = { home: "", lesson: "교재 순서 복습", cards: "단어 카드", quiz: "복습 퀴즈", patterns: "문법 패턴", drive: "운전 모드", phrases: "회화 표현", list: "단어장 목록", keys: "설정", add: "단어 추가", whatsnew: "변경 내역", forms: "형태별 보기", roots: "어근별 보기" };
   $("#crumb").textContent = labels[name] || "";
   renderTopNav();
   views[name](arg);
@@ -658,6 +677,7 @@ const MENU_DEFS = {
   lesson: { name: "교재 순서 복습", html: "📘 교재 순서 복습 <small>제1과·제2과 목차대로</small>", action: "go('lesson')" },
   cards: { name: "단어 카드", html: "🃏 단어 카드 <small>큰 글씨 + 모음표시</small>", action: "go('cards')" },
   list: { name: "단어장 목록", html: "📖 단어장 목록 <small>전체 단어 쭉 보기</small>", action: "go('list')" },
+  roots: { name: "어근별 보기", html: "🌱 어근별 보기 <small>자음 세 개에서 뻗어나온 단어들</small>", action: "go('roots')" },
   forms: { name: "형태별 보기", html: "🔤 형태별 보기 <small>복수형을 어형별로 묶어서</small>", action: "go('forms')" },
   quiz: { name: "복습 퀴즈", html: "✍️ 복습 퀴즈 <small>뜻·성별·한정 맞히기</small>", action: "go('quiz')" },
   patterns: { name: "문법 패턴", html: "📐 문법 패턴 <small>형용사 3패턴 · هَلْ 의문문</small>", action: "go('patterns')" },
@@ -667,7 +687,7 @@ const MENU_DEFS = {
   add: { name: "단어 추가", html: "➕ 단어 추가 <small>직접 수집한 단어 등록</small>", action: "go('add')" },
   settings: { name: "설정", html: "⚙️ 설정 <small>발음 목소리 · 메뉴 순서 · 단축키</small>", action: "go('keys')" },
 };
-const DEFAULT_MENU = ["lesson", "cards", "list", "forms", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
+const DEFAULT_MENU = ["lesson", "cards", "list", "roots", "forms", "quiz", "patterns", "drive", "phrases", "pdf", "add", "settings"];
 // 단어 추가는 아직 개발 중 — 로컬(file://)에서만 노출, 라이브에서는 숨김
 const DEV = location.protocol === "file:" || location.hostname === "localhost";
 function menuOrder() {
@@ -818,6 +838,7 @@ function renderCard() {
   const back = `
     <div class="back-line"><b>${w.ko}</b> · ${w.en}</div>
     <div class="back-line">${w.roman} <span style="margin-left:8px">${w.pos}${genderKo ? " · " + genderKo : ""} · ${{ new: "🌱 새 단어", learning: "📖 학습중", known: "🏆 아는 단어" }[statusOf(w.id)]}</span></div>
+    ${w.root ? `<div class="back-line"><span class="root-chip" onclick="event.stopPropagation();go('roots','${w.root}')">${w.root}</span> <span style="font-size:13px;color:var(--sub)">${w.rootKo}</span></div>` : ""}
     ${w.fem ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형: <span class="arabic">${hl(w.fem)}</span> ${w.femRoman}</div>` : ""}
     ${w.pl ? `<div class="fem-line" style="cursor:pointer" onclick="event.stopPropagation();sayAr('${w.id}_pl','${w.pl.replace(/'/g, "\\'")}')">🔊 복수형: <span class="arabic">${hl(w.pl)}</span> ${w.plRoman || ""}</div>` : ""}
     ${w.ex ? `<div class="ex-line back-line"><span class="arabic">${hl(w.ex)}</span></div>` : ""}
@@ -1347,6 +1368,53 @@ function maybeShowWhatsNew() {
 }
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeWhatsNew(); });
 
+// ── 어근별 보기: 단어 하나하나가 어느 어근에서 나왔는지, 같은 어근에서 뭐가 더 나오는지
+function rootGroups() {
+  const g = {};
+  VOCAB.filter(w => w.root).forEach(w => (g[w.root] = g[w.root] || { root: w.root, ko: w.rootKo, words: [] }).words.push(w));
+  return Object.values(g).sort((a, b) => b.words.length - a.words.length || a.root.localeCompare(b.root));
+}
+// 어근에서 뻗어나온 형태들 — 복수형·여성형이 있으면 같이 보여준다
+function rootWordRow(w) {
+  const forms = [];
+  if (w.fem) forms.push(`<span class="rw-f">여 <span class="arabic">${hl(w.fem)}</span></span>`);
+  if (w.pl) forms.push(`<span class="rw-f">복 <span class="arabic">${hl(w.pl)}</span>${w.plPat ? ` <i class="rw-pat arabic">${w.plPat}</i>` : ""}</span>`);
+  return `<div class="root-row" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\'")}')">
+      <span class="arabic rw-ar">${hl(w.ar)}</span>
+      <span class="rw-ko">${w.ko}</span>
+      <span class="rw-pos">${w.pos}</span>
+      ${forms.length ? `<span class="rw-forms">${forms.join("")}</span>` : ""}
+    </div>`;
+}
+views.roots = (only) => {
+  const all = rootGroups();
+  const shared = all.filter(g => g.words.length > 1);
+  const list = only ? all.filter(g => g.root === only) : (rootFilter === "shared" ? shared : all);
+  const chip = (label, val) => `<button onclick="setRootFilter('${val}')" style="font-family:inherit;font-size:14px;padding:8px 14px;border-radius:20px;cursor:pointer;border:1px solid ${rootFilter === val ? "var(--accent)" : "var(--line)"};background:${rootFilter === val ? "var(--accent)" : "var(--card)"};color:${rootFilter === val ? "#fff" : "var(--ink)"}">${label}</button>`;
+  $("#main").innerHTML = (only ? `
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <button class="choice" style="padding:8px 14px" onclick="go('roots')">← 전체 어근</button>
+      </div>` : `
+      <p class="hint" style="margin:0 0 10px">
+        아랍어 단어는 <b>자음 세 개(어근)</b>에서 나옵니다. 어근이 기둥이고 복수형·여성형·정관사는 그 위에 얹힙니다.
+        단어장 ${VOCAB.length}개 중 <b>${all.reduce((n, g) => n + g.words.length, 0)}개</b>에 어근이 있고,
+        그중 <b>${shared.reduce((n, g) => n + g.words.length, 0)}개</b>는 서로 어근을 나눠 씁니다.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px">
+        ${chip(`같은 어근끼리 ${shared.length}`, "shared")}${chip(`전체 ${all.length}`, "all")}
+      </div>`) + hlLegend() + list.map(g => `
+    <div class="cl" style="margin-bottom:12px">
+      <div class="cl-head">
+        <span class="arabic" style="font-size:25px;color:var(--accent);font-weight:700;letter-spacing:4px">${g.root}</span>
+        <b style="font-weight:400;font-size:14px;color:var(--sub)">${g.ko}</b>
+        <span class="d">${g.words.length}개</span>
+      </div>
+      <div>${g.words.map(rootWordRow).join("")}</div>
+    </div>`).join("") + (list.length ? "" : `<p style="text-align:center;padding:40px">해당 어근이 없습니다</p>`);
+};
+let rootFilter = localStorage.getItem("rootFilter") || "shared";
+function setRootFilter(v) { rootFilter = v; localStorage.setItem("rootFilter", v); views.roots(); }
+
 // ── 형태별 보기: 복수형을 교재 2과의 어형별로 묶는다 (낱개 47개 → 틀 10여 개)
 const PL_PAT_ORDER = ["فِعَالٌ", "مَفَاعِلُ", "أَفْعَالٌ", "فُعَلَاءُ", "أَفْعِلَاءُ", "فَعَالِيلُ",
   "فُعُولٌ", "فُعْلٌ", "أَفْعُلٌ", "فُعْلَانٌ", "ـَاتٌ", "ـُونَ", "그 외"];
@@ -1421,6 +1489,7 @@ views.list = (filter) => {
         <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
         <div class="rm">${w.roman}${w.femRoman ? " / " + w.femRoman : ""}${w.gender === "m" ? " · 남성" : w.gender === "f" ? " · 여성" : ""}</div>
         ${w.pl ? `<div class="rm">복수 <span class="arabic" style="font-size:22px">${hl(w.pl)}</span> ${w.plRoman || ""}</div>` : ""}
+        ${w.root ? `<div class="rm"><span class="root-chip" onclick="event.stopPropagation();go('roots','${w.root}')">${w.root}</span> ${w.rootKo}</div>` : ""}
         ${w.note ? `<div class="mn">💡 ${w.note}</div>` : ""}
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">🔊 ${w.fem ? "남성형" : "발음"}</button>
