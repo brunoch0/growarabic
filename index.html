@@ -66,6 +66,29 @@
   .cl-new { display: inline-block; font-size: 11px; font-weight: 700; color: #fff;
     background: var(--wrong); border-radius: 8px; padding: 1px 7px; }
 
+  /* 교재 표 (인칭대명사 등) */
+  .tbl-wrap { overflow-x: auto; margin: 14px 0 0; -webkit-overflow-scrolling: touch; }
+  table.gram {
+    border-collapse: collapse; width: 100%; min-width: 520px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  table.gram th, table.gram td {
+    border: 1px solid var(--line); padding: 9px 8px; text-align: center; vertical-align: middle;
+  }
+  table.gram thead th { background: var(--accent-soft); font-weight: 600; }
+  table.gram thead th .ta { display: block; font-family: "SF Arabic", "Geeza Pro", serif; font-size: 17px; font-weight: 700; }
+  table.gram thead th .tk { display: block; font-size: 11.5px; color: var(--sub); font-weight: 500; margin-top: 2px; }
+  table.gram tbody th { background: var(--accent-soft); white-space: nowrap; }
+  table.gram tbody th .ta { display: block; font-family: "SF Arabic", "Geeza Pro", serif; font-size: 16px; font-weight: 700; }
+  table.gram tbody th .tk { display: block; font-size: 11.5px; color: var(--sub); font-weight: 500; }
+  table.gram td { cursor: pointer; }
+  table.gram td:hover { background: var(--accent-soft); }
+  table.gram td .ta {
+    font-family: "SF Arabic", "Geeza Pro", "Arial Unicode MS", serif;
+    direction: rtl; unicode-bidi: isolate; font-size: 25px; font-weight: 600; line-height: 1.7;
+  }
+  .tbl-note { font-size: 13px; color: var(--sub); margin: 8px 4px 0; }
+
   /* 형태별 보기 */
   .form-row {
     display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
@@ -1027,6 +1050,18 @@ function markSec(id) {
 const findSec = (id) => LESSONS.flatMap(l => l.sections).find(s => s.id === id);
 let CUR_SEC = null;
 
+// 교재의 2차원 표를 그대로 그린다 (아랍어처럼 오른쪽→왼쪽, 칸을 누르면 발음)
+function gramTable(t) {
+  const cell = (txt) => `<td onclick="sayLine('${txt.replace(/'/g, "\\'")}')"><span class="ta">${txt}</span></td>`;
+  return `<div class="tbl-wrap"><table class="gram" dir="rtl">
+      <thead><tr><th></th>${t.cols.map(c => `<th><span class="ta">${c.ar}</span><span class="tk">${c.ko}</span></th>`).join("")}</tr></thead>
+      <tbody>${t.rows.map(r => `<tr>
+        <th><span class="ta">${r.ar}</span><span class="tk">${r.ko}</span></th>
+        ${r.cells.map(cell).join("")}
+      </tr>`).join("")}</tbody>
+    </table></div>${t.note ? `<p class="tbl-note">${t.note}</p>` : ""}`;
+}
+
 views.lesson = (secId) => {
   CUR_SEC = secId || null;
   const done = secDone();
@@ -1058,6 +1093,7 @@ views.lesson = (secId) => {
     </div>
     <div class="rule-box">${s.rule}</div>
     ${hlLegend()}
+    ${s.table ? gramTable(s.table) : ""}
     ${s.rows ? `<div class="pattern-set">${s.rows.map(r => `
       <div class="pattern-row" style="cursor:pointer" onclick="sayLine('${r.ar.replace(/'/g, "\\'").replace(/ → /g, " ")}')">
         <div class="desc"><b>${r.ko}</b><span>${r.roman}${r.note ? "<br>" + r.note : ""}</span></div>

@@ -11,7 +11,7 @@ const VOCAB = [
   { id: "kitaab", ar: "كِتَابٌ", roman: "kitaabun", ko: "책", en: "book", pos: "명사", gender: "m", cat: "사물", pl: "كُتُبٌ", plRoman: "kutubun", plPat: "فُعْلٌ", date: "2026-07-03" },
   { id: "taalib", ar: "طَالِبٌ", roman: "taalibun", ko: "남학생", en: "male student", pos: "명사", gender: "m", cat: "사람", ex: "أَنَا طَالِبٌ", date: "2026-07-03" },
   { id: "taaliba", ar: "طَالِبَةٌ", roman: "taalibatun", ko: "여학생", en: "female student", pos: "명사", gender: "f", note: "타마르부타 ة 로 끝나는 여성명사", ex: "أَنَا طَالِبَةٌ", date: "2026-07-03" },
-  { id: "ustaadh", ar: "أُسْتَاذٌ", roman: "ustaadhun", fem: "أُسْتَاذَةٌ", femRoman: "ustaadhatun", ko: "교수, 선생님", en: "professor", pos: "명사", gender: "pair", cat: "사람", date: "2026-07-03" },
+  { id: "ustaadh", ar: "أُسْتَاذٌ", roman: "ustaadhun", fem: "أُسْتَاذَةٌ", femRoman: "ustaadhatun", ko: "교수, 선생님", en: "professor", pos: "명사", gender: "pair", cat: "사람", date: "2026-07-03", pl: "أَسَاتِذَةٌ", plRoman: "asaatidhatun", plPat: "فَعَالِيلُ" },
   { id: "jaamia", ar: "جَامِعَةٌ", roman: "jaami'atun", ko: "대학교", en: "university", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-07-03" },
   { id: "madrasa", ar: "مَدْرَسَةٌ", roman: "madrasatun", ko: "학교", en: "school", pos: "명사", gender: "f", pl: "مَدَارِسُ", plRoman: "madaarisu", plPat: "مَفَاعِلُ", note: "타마르부타 ة", cat: "장소", date: "2026-07-03" },
   { id: "ghurfa", ar: "غُرْفَةٌ", roman: "ghurfatun", ko: "방", en: "room", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-07-03" },
@@ -251,6 +251,15 @@ const VOCAB = [
   { id: "maksuur", ar: "مَكْسُورٌ", roman: "maksuurun", fem: "مَكْسُورَةٌ", femRoman: "maksuuratun", ko: "부서진", en: "broken", pos: "분사", gender: "pair", date: "2026-09-30", img: "💔" },
   { id: "maftuuh", ar: "مَفْتُوحٌ", roman: "maftuuhun", fem: "مَفْتُوحَةٌ", femRoman: "maftuuhatun", ko: "열려 있는", en: "open", pos: "분사", gender: "pair", date: "2026-09-30", img: "🔓" },
   { id: "hassaan", ar: "حَسَّانُ", roman: "hassaanu", ko: "하싼 (남자 이름)", en: "Hassan", pos: "이름", gender: "m", date: "2026-09-30", img: "🧔" },
+
+  { id: "hasan", ar: "حَسَنٌ", roman: "hasanun", fem: "حَسَنَةٌ", femRoman: "hasanatun", ko: "잘생긴, 좋은", en: "handsome, good", pos: "형용사", gender: "pair", date: "2026-10-02", img: "😊" },
+  { id: "wajh", ar: "وَجْهٌ", roman: "wajhun", ko: "얼굴", en: "face", pos: "명사", gender: "m", cat: "신체", date: "2026-10-02", img: "🙂" },
+  { id: "sahl", ar: "سَهْلٌ", roman: "sahlun", fem: "سَهْلَةٌ", femRoman: "sahlatun", ko: "쉬운", en: "easy", pos: "형용사", gender: "pair", date: "2026-10-02", img: "👌" },
+  { id: "sab", ar: "صَعْبٌ", roman: "sabun", fem: "صَعْبَةٌ", femRoman: "sabatun", ko: "어려운", en: "difficult", pos: "형용사", gender: "pair", date: "2026-10-02", img: "😤" },
+  { id: "tayyib", ar: "طَيِّبٌ", roman: "tayyibun", fem: "طَيِّبَةٌ", femRoman: "tayyibatun", ko: "좋은, 착한", en: "good, kind", pos: "형용사", gender: "pair", note: "طَيِّبُ الْقَلْبِ = 마음씨 좋은", date: "2026-10-02", img: "💗" },
+  { id: "fahm", ar: "فَهْمٌ", roman: "fahmun", ko: "이해", en: "understanding", pos: "명사", gender: "m", date: "2026-10-02", img: "💡" },
+  { id: "hadm", ar: "هَضْمٌ", roman: "hadmun", ko: "소화", en: "digestion", pos: "명사", gender: "m", date: "2026-10-02", img: "🍽️" },
+  { id: "kalaam", ar: "كَلَامٌ", roman: "kalaamun", ko: "말, 이야기", en: "speech", pos: "명사", gender: "m", note: "كَثِيرُ الْكَلَامِ = 말이 많은", date: "2026-10-02", img: "💬" },
 ];
 
 // 초창기 회화 표현 (운전 모드 루프에 사용)
@@ -491,6 +500,18 @@ const EXAMPLES = [
   { ar: "سَمِعْتُ بُكَاءَ طَالِبَةٍ فِي الْمَمَرِّ", roman: "samitu bukaaa taalibatin fi l-mamarri", ko: "나는 복도에서 어떤 여학생의 울음을 들었다.", sec: "L3.7" },
   { ar: "أَمَامَ الْبَابِ حِذَاءُ بِنْتٍ", roman: "amaama l-baabi hidhaau bintin", ko: "문 앞에 어떤 소녀의 신발이 있다.", sec: "L3.7" },
   { ar: "هُوَ مَوْجُودٌ فِي مَدْرَسَةِ بَنَاتٍ", roman: "huwa mawjuudun fii madrasati banaatin", ko: "그는 어떤 여학교에 있다.", sec: "L3.7" },
+
+  // ── 제3과 2.2-2) 비사실 연결형 (유제7)
+  { ar: "اَلطَّالِبُ الطَّيِّبُ الْقَلْبِ فِي الْمَطْعَمِ", roman: "at-taalibu t-tayyibu l-qalbi fi l-matami", ko: "그 마음씨 좋은 학생은 식당에 있다.", sec: "L3.8" },
+  { ar: "اَلطَّالِبُ طَيِّبُ الْقَلْبِ", roman: "at-taalibu tayyibu l-qalbi", ko: "그 학생은 마음씨가 좋다.", sec: "L3.8" },
+  { ar: "اَلطَّالِبَةُ الطَّيِّبَةُ الْقَلْبِ فِي الْفَصْلِ", roman: "at-taalibatu t-tayyibatu l-qalbi fi l-fasli", ko: "그 마음씨 좋은 여학생은 교실에 있다.", sec: "L3.8" },
+  { ar: "اَلطَّالِبَةُ طَيِّبَةُ الْقَلْبِ", roman: "at-taalibatu tayyibatu l-qalbi", ko: "그 여학생은 마음씨가 좋다.", sec: "L3.8" },
+  { ar: "اَلدَّرْسُ سَهْلُ الْفَهْمِ", roman: "ad-darsu sahlu l-fahmi", ko: "그 수업은 이해하기 쉽다.", sec: "L3.8" },
+  { ar: "اَلدُّرُوسُ سَهْلَةُ الْفَهْمِ", roman: "ad-duruusu sahlatu l-fahmi", ko: "그 수업들은 이해하기 쉽다.", sec: "L3.8" },
+  { ar: "اَلْأُسْتَاذُ كَثِيرُ الْكَلَامِ", roman: "al-ustaadhu kathiiru l-kalaami", ko: "그 교수는 말이 많다.", sec: "L3.8" },
+  { ar: "اَلْأُسْتَاذَةُ كَثِيرَةُ الْكَلَامِ", roman: "al-ustaadhatu kathiiratu l-kalaami", ko: "그 여교수는 말이 많다.", sec: "L3.8" },
+  { ar: "اَلْأَسَاتِذَةُ كَثِيرُو الْكَلَامِ", roman: "al-asaatidhatu kathiiruu l-kalaami", ko: "그 교수들은 말이 많다.", sec: "L3.8" },
+  { ar: "اَلْأُسْتَاذَاتُ كَثِيرَاتُ الْكَلَامِ", roman: "al-ustaadhaatu kathiiraatu l-kalaami", ko: "그 여교수들은 말이 많다.", sec: "L3.8" },
 ];
 
 // 형용사 3패턴 세트: [비한정 명사+형용사, 한정 명사+형용사, 한정 주부+비한정 술부]
@@ -774,12 +795,27 @@ const LESSONS = [
   {
     id: "L3",
     title: "제3과 — 인칭대명사와 연결형",
-    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 1~9페이지 (사실 연결형 유제6까지)",
+    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 1~9페이지 (비사실 연결형 유제7까지)",
     sections: [
       {
         id: "L3.1",
         title: "1.1 독립 인칭대명사 (اَلضَّمَائِرُ الْمُنْفَصِلَةُ)",
         rule: "주어로 쓰는 대명사다. 3인칭·2인칭은 <b>남녀를 구분</b>하고, 1인칭은 남녀 공통이다. <b>1인칭 쌍수는 따로 없고 복수형 نَحْنُ 로 대신한다.</b>",
+        table: {
+          note: "교재 표 그대로입니다. 아랍어처럼 <b>오른쪽에서 왼쪽</b>으로 읽으세요.",
+          cols: [
+            { ar: "اَلْغَائِبُ", ko: "3인칭 남" },
+            { ar: "اَلْغَائِبَةُ", ko: "3인칭 여" },
+            { ar: "اَلْمُخَاطَبُ", ko: "2인칭 남" },
+            { ar: "اَلْمُخَاطَبَةُ", ko: "2인칭 여" },
+            { ar: "اَلْمُتَكَلِّمُ", ko: "1인칭 공통" },
+          ],
+          rows: [
+            { ar: "اَلْمُفْرَدُ", ko: "단수", cells: ["هُوَ", "هِيَ", "أَنْتَ", "أَنْتِ", "أَنَا"] },
+            { ar: "اَلْمُثَنَّى", ko: "쌍수", cells: ["هُمَا", "هُمَا", "أَنْتُمَا", "أَنْتُمَا", "نَحْنُ"] },
+            { ar: "اَلْجَمْعُ", ko: "복수", cells: ["هُمْ", "هُنَّ", "أَنْتُمْ", "أَنْتُنَّ", "نَحْنُ"] },
+          ],
+        },
         rows: [
           { ar: "هُوَ · هِيَ", roman: "huwa · hiya", ko: "그는 · 그녀는", note: "3인칭 단수 (남·여)" },
           { ar: "هُمَا", roman: "humaa", ko: "그 둘은", note: "3인칭 쌍수 — 남녀 공통" },
@@ -798,6 +834,21 @@ const LESSONS = [
         id: "L3.2",
         title: "1.2 접미 인칭대명사 (اَلضَّمَائِرُ الْمُتَّصِلَةُ)",
         rule: "명사·타동사·전치사 뒤에 <b>붙여 쓰는</b> 대명사다. 명사에 붙으면 소유를 나타내고, 그 명사는 한정되면서 <b>탄윈을 잃는다</b>. بَيْتٌ + هَا → بَيْتُهَا",
+        table: {
+          note: "독립형 표와 <b>같은 자리</b>에 놓고 비교하세요. 3인칭·2인칭 쌍수가 하나로 합쳐지는 것도 똑같습니다.",
+          cols: [
+            { ar: "اَلْغَائِبُ", ko: "3인칭 남" },
+            { ar: "اَلْغَائِبَةُ", ko: "3인칭 여" },
+            { ar: "اَلْمُخَاطَبُ", ko: "2인칭 남" },
+            { ar: "اَلْمُخَاطَبَةُ", ko: "2인칭 여" },
+            { ar: "اَلْمُتَكَلِّمُ", ko: "1인칭 공통" },
+          ],
+          rows: [
+            { ar: "اَلْمُفْرَدُ", ko: "단수", cells: ["ـهُ", "ـهَا", "ـكَ", "ـكِ", "ـِي · ـنِي"] },
+            { ar: "اَلْمُثَنَّى", ko: "쌍수", cells: ["ـهُمَا", "ـهُمَا", "ـكُمَا", "ـكُمَا", "ـنَا"] },
+            { ar: "اَلْجَمْعُ", ko: "복수", cells: ["ـهُمْ", "ـهُنَّ", "ـكُمْ", "ـكُنَّ", "ـنَا"] },
+          ],
+        },
         rows: [
           { ar: "ـهُ · ـهَا", roman: "-hu · -haa", ko: "그의 · 그녀의", note: "3인칭 단수" },
           { ar: "ـهُمَا", roman: "-humaa", ko: "그 둘의", note: "3인칭 쌍수" },
@@ -874,12 +925,43 @@ const LESSONS = [
         words: ["hidhaa", "tifl", "bukaa", "raas", "mamarr"],
         sec: "L3.7",
       },
+      {
+        id: "L3.8",
+        title: "2.2-2) 비사실 연결형 (اَلْإِضَافَةُ غَيْرُ الْحَقِيقِيَّةِ)",
+        rule: "앞에 오는 것이 명사가 아니라 <b>형용사</b>인 연결형이다. '<b>형용사 + 한정명사</b>' 통째로 하나의 합성형용사가 되고, 그 자체는 <b>비한정</b>이다. 성·수·격·한정은 전부 <b>앞의 형용사</b>를 바꿔서 나타낸다. 뒤의 명사는 اَلْ 를 단 채 그대로 있다.",
+        rows: [
+          { ar: "حَسَنُ الْوَجْهِ", roman: "hasanu l-wajhi", ko: "얼굴이 잘생긴", note: "비한정 남성 — 기본형" },
+          { ar: "اَلْحَسَنُ الْوَجْهِ", roman: "al-hasanu l-wajhi", ko: "얼굴이 잘생긴 (한정)", note: "앞 형용사에 اَلْ 를 붙여 한정" },
+          { ar: "حَسَنَةُ الْوَجْهِ", roman: "hasanatu l-wajhi", ko: "얼굴이 예쁜 (여성)", note: "앞 형용사를 여성형으로" },
+          { ar: "وَلَدٌ حَسَنُ الْوَجْهِ", roman: "waladun hasanu l-wajhi", ko: "얼굴이 잘생긴 한 소년", note: "비한정 명사를 수식" },
+          { ar: "اَلْوَلَدُ الْحَسَنُ الْوَجْهِ", roman: "al-waladu l-hasanu l-wajhi", ko: "그 얼굴이 잘생긴 소년", note: "수식 — 형용사에 اَلْ" },
+          { ar: "اَلْوَلَدُ حَسَنُ الْوَجْهِ", roman: "al-waladu hasanu l-wajhi", ko: "그 소년은 얼굴이 잘생겼다", note: "술어 — 형용사에 اَلْ 없음 (바로 위와 비교)" },
+          { ar: "سَهْلُ الْهَضْمِ", roman: "sahlu l-hadmi", ko: "소화하기 쉬운", note: "" },
+          { ar: "صَعْبُ الْفَهْمِ", roman: "sabu l-fahmi", ko: "이해하기 힘든", note: "" },
+          { ar: "طَالِبَةٌ كَثِيرَةُ الْكَلَامِ", roman: "taalibatun kathiiratu l-kalaami", ko: "말이 많은 여학생", note: "여성 명사 → 여성 형용사" },
+          { ar: "طَيِّبَا الْقَلْبِ", roman: "tayyibaa l-qalbi", ko: "마음씨 좋은 (쌍수 주격)", note: "쌍수도 앞 형용사가 바뀐다" },
+          { ar: "اَلرِّجَالُ طَيِّبُو الْقَلْبِ", roman: "ar-rijaalu tayyibuu l-qalbi", ko: "그 남자들은 마음씨가 좋다", note: "남성 복수 — ـُونَ 의 ن 이 떨어진다" },
+        ],
+        words: ["hasan", "wajh", "sahl", "sab", "tayyib", "fahm", "hadm", "kalaam", "qalb", "kathiir"],
+        sec: "L3.8",
+      },
     ],
   },
 ];
 
 // ── 변경 내역 (맨 위가 최신). VERSION 은 첫 항목의 v 를 쓴다.
 const CHANGELOG = [
+  {
+    v: "1.7",
+    date: "2026-10-02",
+    title: "인칭대명사 표 · 비사실 연결형",
+    items: [
+      "<b>교재의 인칭대명사 표를 그대로 넣었습니다</b> — 독립형·접미형 둘 다. 오른쪽에서 왼쪽으로, 단수·쌍수·복수 세 줄. 칸을 누르면 발음이 나옵니다",
+      "두 표를 같은 모양으로 맞춰서 <b>자리를 비교</b>할 수 있습니다. 3인칭·2인칭 쌍수가 하나로 합쳐지는 게 양쪽 다 똑같습니다",
+      "<b>비사실 연결형</b>(اَلْإِضَافَةُ غَيْرُ الْحَقِيقِيَّةِ) 절 추가 — 유제7까지",
+      "단어 8개 추가(총 234), 문장 10개 추가(총 210)",
+    ],
+  },
   {
     v: "1.6",
     date: "2026-09-30",

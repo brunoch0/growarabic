@@ -250,14 +250,14 @@ t("복수형 퀴즈: 보기 4개", (qh.match(/class="choice"/g)||[]).length>=4, 
 // ── 제3과
 const L3=LESSONS.find(l=>l.id==="L3");
 t("제3과 있음", !!L3);
-t("제3과 7절", L3.sections.length===7, String(L3.sections.length));
+t("제3과 절 수", L3.sections.length===8, String(L3.sections.length));
 t("절이 참조하는 단어가 전부 단어장에 있음",
   L3.sections.flatMap(s=>s.words||[]).every(w=>VOCAB.some(v=>v.id===w)),
   L3.sections.flatMap(s=>s.words||[]).filter(w=>!VOCAB.some(v=>v.id===w)).join(","));
 t("절이 선언한 sec 마다 예문이 있음",
   L3.sections.filter(s=>s.sec).every(s=>EXAMPLES.some(e=>e.sec===s.sec)),
   L3.sections.filter(s=>s.sec&&!EXAMPLES.some(e=>e.sec===s.sec)).map(s=>s.id).join(","));
-t("제3과 예문 69개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===69,
+t("제3과 예문 79개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===79,
   String(EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length));
 currentView="lesson"; views.lesson("L3.5");
 const lh=ELS["#main"].innerHTML;
@@ -270,11 +270,48 @@ startQuiz("sent2ko","L3.6");
 t("연결형 절별 퀴즈", quizState.items.every(e=>e.sec==="L3.6"), String(quizState.items.length));
 // 새 단어 무결성
 const n3=VOCAB.filter(w=>w.date==="2026-09-30");
-t("신규 25개", n3.length===25, String(n3.length));
+t("9/30 신규 25개", n3.length===25, String(n3.length));
 t("신규 단어 전부 ar·ko·roman·pos 있음", n3.every(w=>w.ar&&w.ko&&w.roman&&w.pos),
   n3.filter(w=>!(w.ar&&w.ko&&w.roman&&w.pos)).map(w=>w.id).join(","));
 t("복수형 있으면 plPat 도 있음", VOCAB.filter(w=>w.pl).every(w=>w.plPat),
   VOCAB.filter(w=>w.pl&&!w.plPat).map(w=>w.id).join(","));
+
+
+// ── 교재 표
+const sec1=LESSONS.find(l=>l.id==="L3").sections.find(s=>s.id==="L3.1");
+const sec2=LESSONS.find(l=>l.id==="L3").sections.find(s=>s.id==="L3.2");
+t("독립 인칭대명사 표 있음", !!sec1.table);
+t("접미 인칭대명사 표 있음", !!sec2.table);
+t("두 표의 열 구성이 같음", JSON.stringify(sec1.table.cols)===JSON.stringify(sec2.table.cols));
+[sec1,sec2].forEach((sx,n)=>{
+  const T=sx.table;
+  t(`표${n+1}: 3행(단수·쌍수·복수)`, T.rows.length===3, String(T.rows.length));
+  t(`표${n+1}: 모든 행의 칸 수가 열 수와 같음`,
+    T.rows.every(r=>r.cells.length===T.cols.length),
+    T.rows.map(r=>r.cells.length).join(","));
+  t(`표${n+1}: 빈 칸 없음`, T.rows.every(r=>r.cells.every(c=>c&&c.trim())));
+});
+t("독립형 표에 هُوَ 가 첫 칸", sec1.table.rows[0].cells[0]==="هُوَ", sec1.table.rows[0].cells[0]);
+t("1인칭 쌍수 자리가 نَحْنُ", sec1.table.rows[1].cells[4]==="نَحْنُ", sec1.table.rows[1].cells[4]);
+t("접미형 3인칭 쌍수가 양쪽 같음", sec2.table.rows[1].cells[0]===sec2.table.rows[1].cells[1]);
+
+currentView="lesson"; views.lesson("L3.1");
+const th=ELS["#main"].innerHTML;
+t("표가 화면에 그려짐", /table class="gram"/.test(th));
+t("표가 RTL", /dir="rtl"/.test(th));
+t("표 칸을 누르면 발음", /<td onclick="sayLine\(/.test(th));
+t("표에 가로 스크롤 래퍼", /tbl-wrap/.test(th));
+t("열 머리글 اَلْغَائِبُ", th.indexOf("اَلْغَائِبُ")>=0);
+t("행 머리글 اَلْمُثَنَّى", th.indexOf("اَلْمُثَنَّى")>=0);
+
+// 비사실 연결형
+views.lesson("L3.8");
+const nh=ELS["#main"].innerHTML;
+t("비사실 연결형 절 열림", /비사실 연결형/.test(nh));
+t("حَسَنُ الْوَجْهِ 예시", nh.indexOf("حَسَنُ الْوَجْهِ")>=0);
+t("수식/술어 대비 예시", nh.indexOf("اَلْوَلَدُ الْحَسَنُ الْوَجْهِ")>=0 && nh.indexOf("اَلْوَلَدُ حَسَنُ الْوَجْهِ")>=0);
+t("유제7 10문장", EXAMPLES.filter(e=>e.sec==="L3.8").length===10, String(EXAMPLES.filter(e=>e.sec==="L3.8").length));
+t("제3과 8절", LESSONS.find(l=>l.id==="L3").sections.length===8);
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
