@@ -66,6 +66,38 @@
   .cl-new { display: inline-block; font-size: 11px; font-weight: 700; color: #fff;
     background: var(--wrong); border-radius: 8px; padding: 1px 7px; }
 
+  /* 업데이트 알림 팝업 */
+  #clBack {
+    display: none; position: fixed; inset: 0; z-index: 60;
+    background: rgba(0,0,0,.45); align-items: center; justify-content: center; padding: 18px;
+  }
+  #clBack.on { display: flex; }
+  #clModal {
+    background: var(--card); border-radius: 16px; width: 100%; max-width: 460px;
+    max-height: 82vh; display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.3);
+  }
+  #clModal .m-top { padding: 18px 20px 14px; border-bottom: 1px solid var(--line); }
+  #clModal .m-tag {
+    display: inline-block; font-size: 11px; font-weight: 700; color: #fff;
+    background: var(--accent); border-radius: 9px; padding: 2px 9px; margin-bottom: 7px;
+  }
+  #clModal h3 { font-size: 19px; margin: 0; }
+  #clModal .m-sub { font-size: 12.5px; color: var(--sub); margin-top: 3px; }
+  #clModal .m-body { padding: 14px 20px 6px; overflow-y: auto; }
+  #clModal .m-body ul { margin: 0; padding-left: 20px; }
+  #clModal .m-body li { font-size: 15px; line-height: 1.75; margin-bottom: 9px; }
+  #clModal .m-all {
+    display: block; margin: 2px 0 14px; font-size: 13.5px; color: var(--accent);
+    background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; text-align: left;
+  }
+  #clModal .m-foot {
+    display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--line); flex-wrap: wrap;
+  }
+  #clModal .m-foot button { font-family: inherit; font-size: 14.5px; border-radius: 10px; cursor: pointer; padding: 11px 14px; }
+  #clModal .m-ok { flex: 1 1 auto; border: none; background: var(--accent); color: #fff; font-weight: 600; }
+  #clModal .m-snooze { flex: 1 1 auto; border: 1px solid var(--line); background: var(--card); color: var(--sub); }
+
   /* 교재 표 (인칭대명사 등) */
   .tbl-wrap { overflow-x: auto; margin: 14px 0 0; -webkit-overflow-scrolling: touch; }
   table.gram {
@@ -270,6 +302,7 @@
   <div id="dropMenu" style="display:none;position:absolute;top:52px;right:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);z-index:20;min-width:190px;overflow:hidden"></div>
 </header>
 <main id="main"></main>
+<div id="clBack" onclick="if(event.target===this)closeWhatsNew()"><div id="clModal"></div></div>
 
 <script src="data.js"></script>
 <script src="images.js"></script>
@@ -1281,6 +1314,39 @@ views.whatsnew = () => {
   syncVerBadge();
 };
 
+// ── 새 버전이면 들어올 때 한 번 띄운다 (팀원이 바뀐 걸 바로 알도록)
+const today = () => new Date().toISOString().slice(0, 10);
+function openWhatsNew() {
+  const box = document.getElementById("clModal"), back = document.getElementById("clBack");
+  if (!box || !back) return;  // 팝업 마크업이 없어도 앱이 죽지 않게
+  const c = CHANGELOG[0];
+  box.innerHTML = `
+    <div class="m-top">
+      <span class="m-tag">업데이트</span>
+      <h3>${c.title}</h3>
+      <div class="m-sub">v${c.v} · ${c.date}</div>
+    </div>
+    <div class="m-body">
+      <ul>${c.items.map(t => `<li>${t}</li>`).join("")}</ul>
+      <button class="m-all" onclick="closeWhatsNew();go('whatsnew')">지난 변경 내역도 보기 →</button>
+    </div>
+    <div class="m-foot">
+      <button class="m-snooze" onclick="snoozeWhatsNew()">오늘은 그만 보기</button>
+      <button class="m-ok" onclick="readWhatsNew()">확인했어요</button>
+    </div>`;
+  back.classList.add("on");
+}
+function closeWhatsNew() { const b = document.getElementById("clBack"); if (b) b.classList.remove("on"); }
+function readWhatsNew() { localStorage.setItem("seenVer", VERSION); syncVerBadge(); closeWhatsNew(); }
+function snoozeWhatsNew() { localStorage.setItem("clSnooze", today()); closeWhatsNew(); }
+function maybeShowWhatsNew() {
+  if (typeof VERSION === "undefined") return;
+  if (seenVer() === VERSION) return;              // 이미 확인함
+  if (localStorage.getItem("clSnooze") === today()) return;  // 오늘은 그만 보기
+  openWhatsNew();
+}
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeWhatsNew(); });
+
 // ── 형태별 보기: 복수형을 교재 2과의 어형별로 묶는다 (낱개 47개 → 틀 10여 개)
 const PL_PAT_ORDER = ["فِعَالٌ", "مَفَاعِلُ", "أَفْعَالٌ", "فُعَلَاءُ", "أَفْعِلَاءُ", "فَعَالِيلُ",
   "فُعُولٌ", "فُعْلٌ", "أَفْعُلٌ", "فُعْلَانٌ", "ـَاتٌ", "ـُونَ", "그 외"];
@@ -1549,6 +1615,7 @@ views.phrases = () => {
 
 try { history.replaceState({ name: "home" }, "", "#home"); } catch (e) {}
 go("home", undefined, true);
+maybeShowWhatsNew();
 </script>
 </body>
 </html>

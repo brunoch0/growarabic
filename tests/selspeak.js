@@ -49,6 +49,11 @@ global.SpeechSynthesisUtterance = function (t) { this.text = t; };
 for (const f of ["data.js", "images.js", "audio.js"]) {
   eval(fs.readFileSync(path + f, "utf8").replace(/^const /gm, "var ").replace(/^let /gm, "var "));
 }
+// 팝업 마크업은 index.html 본문에 있으므로 스텁에 미리 등록해 둔다
+ELS.clModal = mkEl("div");
+ELS.clBack = mkEl("div");
+ELS.clBack.classList = { _c: new Set(), add(x){this._c.add(x)}, remove(x){this._c.delete(x)}, contains(x){return this._c.has(x)} };
+
 // 인라인 스크립트: const/let → var (eval 스코프 문제 회피)
 eval(inline.replace(/^const /gm, "var ").replace(/^let /gm, "var "));
 
@@ -312,6 +317,46 @@ t("حَسَنُ الْوَجْهِ 예시", nh.indexOf("حَسَنُ الْوَ�
 t("수식/술어 대비 예시", nh.indexOf("اَلْوَلَدُ الْحَسَنُ الْوَجْهِ")>=0 && nh.indexOf("اَلْوَلَدُ حَسَنُ الْوَجْهِ")>=0);
 t("유제7 10문장", EXAMPLES.filter(e=>e.sec==="L3.8").length===10, String(EXAMPLES.filter(e=>e.sec==="L3.8").length));
 t("제3과 8절", LESSONS.find(l=>l.id==="L3").sections.length===8);
+
+
+// ── 업데이트 팝업
+const popOpen=()=>ELS.clBack.classList.contains("on");
+
+localStorage.removeItem("seenVer"); localStorage.removeItem("clSnooze");
+maybeShowWhatsNew();
+t("새 버전이면 들어올 때 뜬다", popOpen());
+t("팝업에 최신 항목 제목", ELS.clModal.innerHTML.indexOf(CHANGELOG[0].title)>=0);
+t("팝업에 버전·날짜", new RegExp("v"+CHANGELOG[0].v).test(ELS.clModal.innerHTML));
+t("항목 전부 들어감", CHANGELOG[0].items.every(i=>ELS.clModal.innerHTML.indexOf(i)>=0));
+t("버튼 두 개", /m-snooze/.test(ELS.clModal.innerHTML) && /m-ok/.test(ELS.clModal.innerHTML));
+t("지난 내역 링크", /go\('whatsnew'\)/.test(ELS.clModal.innerHTML));
+
+// 오늘은 그만 보기
+snoozeWhatsNew();
+t("그만 보기 → 닫힘", !popOpen());
+t("그만 보기 → 날짜 저장", localStorage.getItem("clSnooze")===new Date().toISOString().slice(0,10));
+maybeShowWhatsNew();
+t("같은 날 다시 들어오면 안 뜸", !popOpen());
+t("그만 보기는 '확인'이 아니다 (배지는 그대로 새 버전)", seenVer()!==VERSION, seenVer());
+localStorage.setItem("clSnooze","2000-01-01");
+maybeShowWhatsNew();
+t("날짜가 바뀌면 다시 뜸", popOpen());
+
+// 확인했어요
+readWhatsNew();
+t("확인 → 닫힘", !popOpen());
+t("확인 → 버전 저장", seenVer()===VERSION);
+localStorage.removeItem("clSnooze");
+maybeShowWhatsNew();
+t("확인한 뒤엔 안 뜸", !popOpen());
+
+// 닫기만 하면 다음에 또 뜬다
+localStorage.removeItem("seenVer");
+maybeShowWhatsNew(); t("미확인이면 다시 뜸", popOpen());
+closeWhatsNew();
+t("그냥 닫으면 상태 안 바뀜", !popOpen() && seenVer()!==VERSION);
+maybeShowWhatsNew(); t("그냥 닫았으면 다음에 또 뜸", popOpen());
+closeWhatsNew(); localStorage.setItem("seenVer",VERSION);
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
