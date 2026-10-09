@@ -255,14 +255,14 @@ t("복수형 퀴즈: 보기 4개", (qh.match(/class="choice"/g)||[]).length>=4, 
 // ── 제3과
 const L3=LESSONS.find(l=>l.id==="L3");
 t("제3과 있음", !!L3);
-t("제3과 절 수", L3.sections.length===8, String(L3.sections.length));
+t("제3과 절 수", L3.sections.length===11, String(L3.sections.length));
 t("절이 참조하는 단어가 전부 단어장에 있음",
   L3.sections.flatMap(s=>s.words||[]).every(w=>VOCAB.some(v=>v.id===w)),
   L3.sections.flatMap(s=>s.words||[]).filter(w=>!VOCAB.some(v=>v.id===w)).join(","));
 t("절이 선언한 sec 마다 예문이 있음",
   L3.sections.filter(s=>s.sec).every(s=>EXAMPLES.some(e=>e.sec===s.sec)),
   L3.sections.filter(s=>s.sec&&!EXAMPLES.some(e=>e.sec===s.sec)).map(s=>s.id).join(","));
-t("제3과 예문 79개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===79,
+t("제3과 예문 109개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===109,
   String(EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length));
 currentView="lesson"; views.lesson("L3.5");
 const lh=ELS["#main"].innerHTML;
@@ -316,7 +316,7 @@ t("비사실 연결형 절 열림", /비사실 연결형/.test(nh));
 t("حَسَنُ الْوَجْهِ 예시", nh.indexOf("حَسَنُ الْوَجْهِ")>=0);
 t("수식/술어 대비 예시", nh.indexOf("اَلْوَلَدُ الْحَسَنُ الْوَجْهِ")>=0 && nh.indexOf("اَلْوَلَدُ حَسَنُ الْوَجْهِ")>=0);
 t("유제7 10문장", EXAMPLES.filter(e=>e.sec==="L3.8").length===10, String(EXAMPLES.filter(e=>e.sec==="L3.8").length));
-t("제3과 8절", LESSONS.find(l=>l.id==="L3").sections.length===8);
+t("제3과 11절", LESSONS.find(l=>l.id==="L3").sections.length===11);
 
 
 // ── 업데이트 팝업
@@ -361,7 +361,7 @@ closeWhatsNew(); localStorage.setItem("seenVer",VERSION);
 
 // ── 어근별 보기
 const withRoot=VOCAB.filter(w=>w.root);
-t("어근 193개 단어에 붙음", withRoot.length===193, String(withRoot.length));
+t("어근 233개 단어에 붙음", withRoot.length===233, String(withRoot.length));
 t("어근 있으면 뜻풀이도 있음", withRoot.every(w=>w.rootKo), withRoot.filter(w=>!w.rootKo).map(w=>w.id).join(","));
 t("어근은 자음 사이 공백 형식", withRoot.every(w=>/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)),
   withRoot.filter(w=>!/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)).map(w=>w.id+":"+w.root).join(","));
@@ -372,7 +372,7 @@ t("대명사·전치사에는 어근 없음",
 
 const G=rootGroups();
 t("어근 묶음이 큰 것부터", G[0].words.length>=G[G.length-1].words.length);
-t("ك ت ب 에 5개", G.find(g=>g.root==="ك ت ب").words.length===5, String(G.find(g=>g.root==="ك ت ب").words.length));
+t("ك ت ب 에 6개", G.find(g=>g.root==="ك ت ب").words.length===6, String(G.find(g=>g.root==="ك ت ب").words.length));
 
 currentView="roots"; localStorage.setItem("rootFilter","shared"); rootFilter="shared"; views.roots();
 const rh=ELS["#main"].innerHTML;
@@ -398,6 +398,31 @@ ELS.cardBack=mkEl("div"); renderCard();
 t("카드 뒷면에 어근 칩", /root-chip/.test(ELS["#main"].innerHTML));
 t("어근 칩을 누르면 어근 화면", /go\('roots','ك ت ب'\)/.test(ELS["#main"].innerHTML));
 setRootFilter("shared");
+
+
+// ── 2.3~2.5
+["L3.9","L3.10","L3.11"].forEach(id=>{
+  const sx=LESSONS.find(l=>l.id==="L3").sections.find(s=>s.id===id);
+  t(id+" 있음", !!sx);
+  t(id+" 예문 10개", EXAMPLES.filter(e=>e.sec===id).length===10, String(EXAMPLES.filter(e=>e.sec===id).length));
+});
+currentView="lesson"; views.lesson("L3.9");
+const h9=ELS["#main"].innerHTML;
+t("2.3: 격만 다른 두 문장이 같이 나옴",
+  h9.indexOf("بَيْتُ الْوَزِيرِ الْجَدِيدِ")>=0 && h9.indexOf("بَيْتُ الْوَزِيرِ الْجَدِيدُ")>=0);
+views.lesson("L3.10");
+const h10=ELS["#main"].innerHTML;
+t("2.4: 여섯 용법 설명", /소유/.test(h10) && /재료/.test(h10) && /합성 형용사/.test(h10));
+t("2.4 예문에 용법 표시", EXAMPLES.filter(e=>e.sec==="L3.10").every(e=>/\[.+\]/.test(e.ko)));
+views.lesson("L3.11");
+const h11=ELS["#main"].innerHTML;
+t("2.5: ن 탈락 설명", /ن/.test(h11) && /떨어진다/.test(h11));
+t("2.5: يَدَا الْوَلَدِ 예시", h11.indexOf("يَدَا الْوَلَدِ")>=0);
+// 새 단어
+const n10=VOCAB.filter(w=>w.date==="2026-10-09");
+t("10/9 신규 40개", n10.length===40, String(n10.length));
+t("신규 전부 어근 있음", n10.every(w=>w.root), n10.filter(w=>!w.root).map(w=>w.id).join(","));
+t("كِتَابَةٌ 가 ك ت ب 에 합류", VOCAB.find(w=>w.id==="kitaaba").root==="ك ت ب");
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
