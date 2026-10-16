@@ -302,6 +302,17 @@ const VOCAB = [
   { id: "amsaka", ar: "أَمْسَكَ", roman: "amsaka", root: "م س ك", rootKo: "잡다", ko: "그는 붙잡았다", en: "he grasped", pos: "동사", gender: null, date: "2026-10-09", img: "✋" },
   { id: "qaraa", ar: "قَرَأَ", roman: "qaraa", root: "ق ر أ", rootKo: "읽다", ko: "그는 읽었다", en: "he read", pos: "동사", gender: null, note: "قَرَأْتُ = 나는 읽었다", date: "2026-10-09", img: "📚" },
   { id: "khaalid", ar: "خَالِدٌ", roman: "khaalidun", root: "خ ل د", rootKo: "영원하다", ko: "칼리드 (남자 이름)", en: "Khalid", pos: "이름", gender: "m", date: "2026-10-09", img: "🧑" },
+
+  // ── 제3과 3차 (2026-10-16 반영: 2.6 연결형과 형용사와 지시사)
+  { id: "haadhihi", ar: "هٰذِهِ", roman: "haadhihi", ko: "이것 (여성)", en: "this (fem.)", pos: "지시어", gender: "f", note: "هَذَا 의 여성형. 사물 복수도 받는다", date: "2026-10-16", img: "👉" },
+  { id: "haaulaai", ar: "هٰؤُلَاءِ", roman: "haaulaai", ko: "이들 (사람 복수)", en: "these (people)", pos: "지시어", gender: null, note: "사람 복수에만 쓴다 — 사물 복수는 هٰذِهِ", date: "2026-10-16", img: "👥" },
+  { id: "li", ar: "لِ", roman: "li-", ko: "~의, ~를 위한", en: "of, for, belonging to", pos: "전치사", gender: null, note: "연결형이 애매할 때 소유를 대신 나타낸다", date: "2026-10-16", img: "🔗" },
+  { id: "madkhal", ar: "مَدْخَلٌ", roman: "madkhalun", root: "د خ ل", rootKo: "들어가다", ko: "입구", en: "entrance", pos: "명사", gender: "m", pl: "مَدَاخِلُ", plRoman: "madaakhilu", plPat: "مَفَاعِلُ", cat: "장소", date: "2026-10-16", img: "🚪" },
+  { id: "shanta", ar: "شَنْطَةٌ", roman: "shantatun", root: "ش ن ط", rootKo: "가방", ko: "가방, 핸드백", en: "bag, handbag", pos: "명사", gender: "f", note: "حَقِيبَةٌ 와 같은 뜻", date: "2026-10-16", img: "👜" },
+  { id: "lugha", ar: "لُغَةٌ", roman: "lughatun", root: "ل غ و", rootKo: "말하다 · 언어", ko: "언어, 말", en: "language", pos: "명사", gender: "f", pl: "لُغَاتٌ", plRoman: "lughaatun", plPat: "ـَاتٌ", date: "2026-10-16", img: "🗣️" },
+  { id: "majma", ar: "مَجْمَعٌ", roman: "majmaun", root: "ج م ع", rootKo: "모으다", ko: "학회, 아카데미", en: "academy, assembly", pos: "명사", gender: "m", pl: "مَجَامِعُ", plRoman: "majaamiu", plPat: "مَفَاعِلُ", date: "2026-10-16", img: "🏛️" },
+  { id: "raiis", ar: "رَئِيسٌ", roman: "raiisun", root: "ر أ س", rootKo: "머리", ko: "장, 총장, 대통령", en: "head, president", pos: "명사", gender: "m", pl: "رُؤَسَاءُ", plRoman: "ruasaau", plPat: "فُعَلَاءُ", note: "رَأْسٌ(머리)과 같은 어근", date: "2026-10-16", img: "🎖️" },
+  { id: "saabiq", ar: "سَابِقٌ", roman: "saabiqun", root: "س ب ق", rootKo: "앞서다", fem: "سَابِقَةٌ", femRoman: "saabiqatun", ko: "이전의, 전(前)", en: "former, previous", pos: "형용사", gender: "pair", date: "2026-10-16", img: "⏮️" },
 ];
 
 // 초창기 회화 표현 (운전 모드 루프에 사용)
@@ -588,6 +599,16 @@ const EXAMPLES = [
   { ar: "قَرَأْتُ كِتَابَيِ الْكَاتِبِ", roman: "qaratu kitaabayi l-kaatibi", ko: "나는 그 작가의 두 책을 읽었다.", sec: "L3.11" },
   { ar: "مُوَظَّفُو الْجَامِعَةِ غَائِبُونَ الْيَوْمَ", roman: "muwazzafuu l-jaamiati ghaaibuuna l-yawma", ko: "그 대학의 직원들은 오늘 결석이다.", sec: "L3.11" },
   { ar: "رِجْلَا التَّاجِرِ طَوِيلَتَانِ", roman: "rijlaa t-taajiri tawiilataani", ko: "그 상인의 두 다리는 길다.", sec: "L3.11" },
+
+  // ── 제3과 2.6 연결형과 지시사 (유제11)
+  { ar: "سَيَّارَةُ هٰذَا الْمُدَرِّسِ سَرِيعَةٌ", roman: "sayyaaratu haadha l-mudarrisi sariiatun", ko: "이 교사의 차는 빠르다.", sec: "L3.12" },
+  { ar: "سَيَّارَةُ الْمُدَرِّسِ هٰذِهِ قَدِيمَةٌ جِدًّا", roman: "sayyaaratu l-mudarrisi haadhihi qadiimatun jiddan", ko: "그 교사의 이 차는 매우 낡았다.", sec: "L3.12" },
+  { ar: "سَيَّارَاتُ هٰؤُلَاءِ الْمُدَرِّسِينَ قَدِيمَةٌ أَيْضًا", roman: "sayyaaraatu haaulaai l-mudarrisiina qadiimatun aydan", ko: "이 교사들의 차들도 낡았다.", sec: "L3.12" },
+  { ar: "سَيَّارَاتُ الْمُدَرِّسِينَ هٰذِهِ جَدِيدَةٌ", roman: "sayyaaraatu l-mudarrisiina haadhihi jadiidatun", ko: "그 교사들의 이 차들은 새것이다.", sec: "L3.12" },
+  { ar: "ثَوْبُ هٰذَا الْوَلَدِ رَخِيصٌ", roman: "thawbu haadha l-waladi rakhiisun", ko: "이 소년의 옷은 싸다.", sec: "L3.12" },
+  { ar: "ثَوْبُ الْوَلَدِ هٰذَا غَالٍ", roman: "thawbu l-waladi haadhaa ghaalin", ko: "그 소년의 이 옷은 비싸다.", sec: "L3.12" },
+  { ar: "شَنْطَةُ هٰذِهِ الطَّبِيبَةِ جَمِيلَةٌ", roman: "shantatu haadhihi t-tabiibati jamiilatun", ko: "이 여의사의 가방은 아름답다.", sec: "L3.12" },
+  { ar: "شَنْطَةُ الطَّبِيبَةِ هٰذِهِ غَالِيَةٌ", roman: "shantatu t-tabiibati haadhihi ghaaliyatun", ko: "그 여의사의 이 가방은 비싸다.", sec: "L3.12" },
 ];
 
 // 형용사 3패턴 세트: [비한정 명사+형용사, 한정 명사+형용사, 한정 주부+비한정 술부]
@@ -871,7 +892,7 @@ const LESSONS = [
   {
     id: "L3",
     title: "제3과 — 인칭대명사와 연결형",
-    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 1~13페이지 (지시사 직전까지)",
+    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 1~14페이지 (اَلْأَسْمَاءُ الْخَمْسَةُ 직전까지)",
     sections: [
       {
         id: "L3.1",
@@ -1072,12 +1093,39 @@ const LESSONS = [
         words: ["amsaka", "qaraa", "daraba", "mughlaq", "qamiis"],
         sec: "L3.11",
       },
+      {
+        id: "L3.12",
+        title: "2.6 연결형과 형용사와 지시사",
+        rule: "연결형에 지시사를 붙일 때 <b>위치가 곧 뜻</b>이다. 후 연결어 <b>앞</b>에 오면 후 연결어를 가리키고, 연결형 <b>뒤</b>에 오면 전 연결어를 가리킨다. 지시사는 가리키는 명사의 성·수·격에 일치시킨다.<br>형용사가 둘 다에 붙어 애매해질 때는 연결형을 쓰지 않고 전치사 <b>لِ</b> 로 잇는 것이 보통이다.",
+        rows: [
+          { ar: "سَيَّارَةُ هٰذَا الْمُدَرِّسِ", roman: "sayyaaratu haadha l-mudarrisi", ko: "이 교사의 차", note: "지시사가 앞 → 뒤 명사(교사)를 가리킨다" },
+          { ar: "سَيَّارَةُ الْمُدَرِّسِ هٰذِهِ", roman: "sayyaaratu l-mudarrisi haadhihi", ko: "그 교사의 이 차", note: "지시사가 뒤 → 앞 명사(차)를 가리킨다" },
+          { ar: "سَيَّارَاتُ هٰؤُلَاءِ الْمُدَرِّسِينَ", roman: "sayyaaraatu haaulaai l-mudarrisiina", ko: "이 교사들의 차들", note: "사람 복수 → هٰؤُلَاءِ" },
+          { ar: "سَيَّارَاتُ الْمُدَرِّسِينَ هٰذِهِ", roman: "sayyaaraatu l-mudarrisiina haadhihi", ko: "그 교사들의 이 차들", note: "사물 복수 → 여성 단수 هٰذِهِ" },
+          { ar: "اَلْمَدْخَلُ الْكَبِيرُ لِلْبَيْتِ الْجَدِيدِ", roman: "al-madkhalu l-kabiiru li-l-bayti l-jadiidi", ko: "그 새 집의 큰 입구", note: "لِ 로 이어 어느 형용사가 뭘 꾸미는지 분명하게" },
+          { ar: "اَلسَّيَّارَةُ الْجَدِيدَةُ لِلْأُسْتَاذِ الطَّوِيلِ الْقَامَةِ", roman: "as-sayyaaratu l-jadiidatu li-l-ustaadhi t-tawiili l-qaamati", ko: "그 키 큰 교수의 새 자동차", note: "연결형으로 쓰면 애매해지는 자리" },
+          { ar: "مَجْمَعُ اللُّغَةِ الْعَرَبِيَّةِ الْأُرْدُنِّيُّ", roman: "majmau l-lughati l-arabiyyati l-urdunniyyu", ko: "요르단 아랍어 아카데미", note: "뜻이 분명하면 연결형을 그대로 쓴다" },
+        ],
+        words: ["haadhaa", "haadhihi", "haaulaai", "li", "madkhal", "shanta", "lugha", "majma", "raiis", "saabiq"],
+        sec: "L3.12",
+      },
     ],
   },
 ];
 
 // ── 변경 내역 (맨 위가 최신). VERSION 은 첫 항목의 v 를 쓴다.
 const CHANGELOG = [
+  {
+    v: "2.0",
+    date: "2026-10-16",
+    title: "연결형과 지시사",
+    items: [
+      "<b>2.6 연결형과 형용사와 지시사</b> — 지시사는 <b>위치가 곧 뜻</b>입니다. سَيَّارَةُ هٰذَا الْمُدَرِّسِ(이 교사의 차)와 سَيَّارَةُ الْمُدَرِّسِ هٰذِهِ(그 교사의 이 차)를 나란히 놨습니다",
+      "사람 복수는 هٰؤُلَاءِ, 사물 복수는 هٰذِهِ 로 갈립니다",
+      "형용사가 애매해지는 자리에서는 연결형 대신 전치사 <b>لِ</b> 로 잇습니다",
+      "단어 9개 추가(총 283), 유제11의 문장 8개 추가(총 248)",
+    ],
+  },
   {
     v: "1.9",
     date: "2026-10-09",
