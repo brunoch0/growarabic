@@ -313,6 +313,28 @@ const VOCAB = [
   { id: "majma", ar: "مَجْمَعٌ", roman: "majmaun", root: "ج م ع", rootKo: "모으다", ko: "학회, 아카데미", en: "academy, assembly", pos: "명사", gender: "m", pl: "مَجَامِعُ", plRoman: "majaamiu", plPat: "مَفَاعِلُ", date: "2026-10-16", img: "🏛️" },
   { id: "raiis", ar: "رَئِيسٌ", roman: "raiisun", root: "ر أ س", rootKo: "머리", ko: "장, 총장, 대통령", en: "head, president", pos: "명사", gender: "m", pl: "رُؤَسَاءُ", plRoman: "ruasaau", plPat: "فُعَلَاءُ", note: "رَأْسٌ(머리)과 같은 어근", date: "2026-10-16", img: "🎖️" },
   { id: "saabiq", ar: "سَابِقٌ", roman: "saabiqun", root: "س ب ق", rootKo: "앞서다", fem: "سَابِقَةٌ", femRoman: "saabiqatun", ko: "이전의, 전(前)", en: "former, previous", pos: "형용사", gender: "pair", date: "2026-10-16", img: "⏮️" },
+
+  // ── 제3과 마무리 (2026-10-25 반영: 2.7 다섯 명사 ~ 연습1·2)
+  { id: "ham", ar: "حَمٌ", roman: "hamun", root: "ح م و", rootKo: "장인 · 시아버지", ko: "장인, 시아버지", en: "father-in-law", pos: "명사", gender: "m", note: "다섯 명사 중 하나", date: "2026-10-25", img: "👴" },
+  { id: "dhuu", ar: "ذُو", roman: "dhuu", root: "ذ و ي", rootKo: "가지다 · 소유", fem: "ذَاتُ", femRoman: "dhaatu", ko: "~을 가진, ~이 있는", en: "possessor of", pos: "명사", gender: "pair", note: "항상 연결형으로만 쓴다. 뒤 명사를 자질·소유로 붙인다", date: "2026-10-25", img: "🧲" },
+  { id: "maal", ar: "مَالٌ", roman: "maalun", root: "م و ل", rootKo: "재산", ko: "돈, 재산", en: "money, wealth", pos: "명사", gender: "m", date: "2026-10-25", img: "💰" },
+  { id: "nufuudh", ar: "نُفُوذٌ", roman: "nufuudhun", root: "ن ف ذ", rootKo: "뚫다", ko: "영향력", en: "influence", pos: "명사", gender: "m", note: "نَافِذَةٌ(창문)과 같은 어근", date: "2026-10-25", img: "🎯" },
+  { id: "siyaasiyy", ar: "سِيَاسِيٌّ", roman: "siyaasiyyun", root: "س و س", rootKo: "다스리다", fem: "سِيَاسِيَّةٌ", femRoman: "siyaasiyyatun", ko: "정치인, 정치의", en: "politician, political", pos: "명사", gender: "pair", date: "2026-10-25", img: "🏛️" },
+  { id: "muhandis", ar: "مُهَنْدِسٌ", roman: "muhandisun", root: "ه ن د س", rootKo: "설계하다", fem: "مُهَنْدِسَةٌ", femRoman: "muhandisatun", ko: "기사, 엔지니어", en: "engineer", pos: "명사", gender: "pair", date: "2026-10-25", img: "👷" },
+  { id: "qism", ar: "قِسْمٌ", roman: "qismun", root: "ق س م", rootKo: "나누다", ko: "학과, 부서", en: "department", pos: "명사", gender: "m", pl: "أَقْسَامٌ", plRoman: "aqsaamun", plPat: "أَفْعَالٌ", date: "2026-10-25", img: "🏫" },
+  { id: "wasikh", ar: "وَسِخٌ", roman: "wasikhun", root: "و س خ", rootKo: "더럽다", fem: "وَسِخَةٌ", femRoman: "wasikhatun", ko: "더러운", en: "dirty", pos: "형용사", gender: "pair", date: "2026-10-25", img: "🧺" },
+  { id: "musinn", ar: "مُسِنٌّ", roman: "musinnun", root: "س ن ن", rootKo: "이 · 나이", fem: "مُسِنَّةٌ", femRoman: "musinnatun", ko: "나이든, 늙은", en: "elderly", pos: "형용사", gender: "pair", date: "2026-10-25", img: "🧓" },
+  { id: "kariim", ar: "كَرِيمٌ", roman: "kariimun", root: "ك ر م", rootKo: "너그럽다", fem: "كَرِيمَةٌ", femRoman: "kariimatun", ko: "관대한, 후한", en: "generous", pos: "형용사", gender: "pair", pl: "كُرَمَاءُ", plRoman: "kuramaau", plPat: "فُعَلَاءُ", date: "2026-10-25", img: "🤝" },
+  { id: "latiif", ar: "لَطِيفٌ", roman: "latiifun", root: "ل ط ف", rootKo: "부드럽다 · 친절하다", fem: "لَطِيفَةٌ", femRoman: "latiifatun", ko: "친절한, 상냥한", en: "kind, nice", pos: "형용사", gender: "pair", date: "2026-10-25", img: "😊" },
+  { id: "mudiir", ar: "مُدِيرٌ", roman: "mudiirun", root: "د و ر", rootKo: "돌다 · 집", ko: "관리자, 원장", en: "director, manager", pos: "명사", gender: "m", note: "دَارٌ(집)·دَوْلَةٌ(국가)와 같은 계열", date: "2026-10-25", img: "🧑‍💼" },
+  { id: "hammaam", ar: "حَمَّامٌ", roman: "hammaamun", root: "ح م م", rootKo: "데우다 · 목욕", ko: "욕실, 화장실", en: "bathroom", pos: "명사", gender: "m", cat: "장소", date: "2026-10-25", img: "🛁" },
+  { id: "mustaqill", ar: "مُسْتَقِلٌّ", roman: "mustaqillun", root: "ق ل ل", rootKo: "적다 · 홀로", fem: "مُسْتَقِلَّةٌ", femRoman: "mustaqillatun", ko: "독립한, 별도의", en: "independent, separate", pos: "분사", gender: "pair", date: "2026-10-25", img: "🚪" },
+  { id: "junayna", ar: "جُنَيْنَةٌ", roman: "junaynatun", root: "ج ن ن", rootKo: "가리다 · 정원", ko: "공원, 작은 정원", en: "garden, park", pos: "명사", gender: "f", cat: "장소", date: "2026-10-25", img: "🌳" },
+  { id: "baqara", ar: "بَقَرَةٌ", roman: "baqaratun", root: "ب ق ر", rootKo: "소", ko: "암소", en: "cow", pos: "명사", gender: "f", date: "2026-10-25", img: "🐄" },
+  { id: "miinaa", ar: "مِينَاءٌ", roman: "miinaaun", root: "و ن ي", rootKo: "항구", ko: "항구, 공항", en: "port, harbor", pos: "명사", gender: "m", pl: "مَوَانِئُ", plRoman: "mawaaniu", plPat: "مَفَاعِلُ", cat: "장소", date: "2026-10-25", img: "⚓" },
+  { id: "intushuun", ar: "إِنْتُشُونْ", roman: "intushuun", ko: "인천", en: "Incheon", pos: "지명", gender: null, date: "2026-10-25", img: "🇰🇷" },
+  { id: "ghasala", ar: "غَسَلَ", roman: "ghasala", root: "غ س ل", rootKo: "씻다", ko: "그는 씻었다", en: "he washed", pos: "동사", gender: null, date: "2026-10-25", img: "🧼" },
+  { id: "akhadha", ar: "أَخَذَ", roman: "akhadha", root: "أ خ ذ", rootKo: "취하다", ko: "그는 가져갔다, 데려갔다", en: "he took", pos: "동사", gender: null, note: "أَخَذْتُ = 나는 데려갔다", date: "2026-10-25", img: "🤝" },
 ];
 
 // 초창기 회화 표현 (운전 모드 루프에 사용)
@@ -609,6 +631,62 @@ const EXAMPLES = [
   { ar: "ثَوْبُ الْوَلَدِ هٰذَا غَالٍ", roman: "thawbu l-waladi haadhaa ghaalin", ko: "그 소년의 이 옷은 비싸다.", sec: "L3.12" },
   { ar: "شَنْطَةُ هٰذِهِ الطَّبِيبَةِ جَمِيلَةٌ", roman: "shantatu haadhihi t-tabiibati jamiilatun", ko: "이 여의사의 가방은 아름답다.", sec: "L3.12" },
   { ar: "شَنْطَةُ الطَّبِيبَةِ هٰذِهِ غَالِيَةٌ", roman: "shantatu t-tabiibati haadhihi ghaaliyatun", ko: "그 여의사의 이 가방은 비싸다.", sec: "L3.12" },
+
+  // ── 제3과 2.7 다섯 명사 (اَلْأَسْمَاءُ الْخَمْسَةُ)
+  { ar: "أَبُو الْوَلَدِ", roman: "abu l-waladi", ko: "그 소년의 아버지는 [주격]", sec: "L3.13" },
+  { ar: "رَأَيْتُ أَبَا الْوَلَدِ", roman: "raaytu abaa l-waladi", ko: "나는 그 소년의 아버지를 보았다 [목적격]", sec: "L3.13" },
+  { ar: "بَيْتُ أَبِي الْوَلَدِ", roman: "baytu abi l-waladi", ko: "그 소년의 아버지의 집 [소유격]", sec: "L3.13" },
+  { ar: "أَخُو الطَّالِبِ طَوِيلٌ", roman: "akhu t-taalibi tawiilun", ko: "그 학생의 형제는 키가 크다.", sec: "L3.13" },
+  { ar: "فُوهَا صَغِيرٌ", roman: "fuuhaa saghiirun", ko: "그녀의 입은 작다.", sec: "L3.13" },
+  { ar: "إِلَى حَمِي مُحَمَّدٍ", roman: "ilaa hamii muhammadin", ko: "무함마드의 장인에게", sec: "L3.13" },
+  { ar: "رَجُلٌ ذُو مَالٍ", roman: "rajulun dhuu maalin", ko: "돈 많은 한 남자", sec: "L3.13" },
+  { ar: "سِيَاسِيٌّ ذُو نُفُوذٍ", roman: "siyaasiyyun dhuu nufuudhin", ko: "한 영향력 있는 정치인", sec: "L3.13" },
+  { ar: "اَلسِّيَاسِيُّ ذُو النُّفُوذِ", roman: "as-siyaasiyyu dhu n-nufuudhi", ko: "그 영향력 있는 정치인", sec: "L3.13" },
+  { ar: "سِيَاسِيَّةٌ ذَاتُ نُفُوذٍ", roman: "siyaasiyyatun dhaatu nufuudhin", ko: "한 영향력 있는 여성 정치인", sec: "L3.13" },
+  { ar: "اَلسِّيَاسِيُّونَ ذَوُو نُفُوذٍ", roman: "as-siyaasiyyuuna dhawuu nufuudhin", ko: "그 정치인들은 영향력이 있다.", sec: "L3.13" },
+  // ── 제3과 2.8 한정의 세 가지 경우
+  { ar: "اَلْبَيْتُ", roman: "al-baytu", ko: "그 집 [① 정관사]", sec: "L3.14" },
+  { ar: "بَيْتُكَ", roman: "baytuka", ko: "너의 집 [② 접미 인칭대명사]", sec: "L3.14" },
+  { ar: "بَيْتُ الْوَلَدِ", roman: "baytu l-waladi", ko: "그 소년의 집 [③ 한정 명사와의 연결형]", sec: "L3.14" },
+  // ── 제3과 연습1 (아랍어 → 한국어)
+  { ar: "بَابُ الْفَصْلِ مَفْتُوحٌ", roman: "baabu l-fasli maftuuhun", ko: "그 교실의 문은 열려 있다.", sec: "L3.15" },
+  { ar: "بَيْتُ الْمُدَرِّسِ وَاسِعٌ", roman: "baytu l-mudarrisi waasiun", ko: "그 교사의 집은 넓다.", sec: "L3.15" },
+  { ar: "عَيْنُ الْمُذِيعَةِ جَمِيلَةٌ", roman: "aynu l-mudhiiati jamiilatun", ko: "그 여자 아나운서의 눈은 아름답다.", sec: "L3.15" },
+  { ar: "رِجْلَا الْمُهَنْدِسِ طَوِيلَتَانِ", roman: "rijlaa l-muhandisi tawiilataani", ko: "그 기사의 두 다리는 길다.", sec: "L3.15" },
+  { ar: "طُلَّابُ قِسْمِ الدِّرَاسَاتِ الْعَرَبِيَّةِ أَغْنِيَاءُ", roman: "tullaabu qismi d-diraasaati l-arabiyyati aghniyaau", ko: "아랍학과의 학생들은 부유하다.", sec: "L3.15" },
+  { ar: "يَدَا أُمِّي صَغِيرَتَانِ وَجَمِيلَتَانِ", roman: "yadaa ummii saghiirataani wa-jamiilataani", ko: "내 어머니의 두 손은 작고 아름답다.", sec: "L3.15" },
+  { ar: "شُبَّاكُ غُرْفَتِي مُغْلَقٌ", roman: "shubbaaku ghurfatii mughlaqun", ko: "내 방의 창문은 닫혀 있다.", sec: "L3.15" },
+  { ar: "بَنُو الرَّجُلِ سُعَدَاءُ الْيَوْمَ", roman: "banu r-rajuli suadaau l-yawma", ko: "그 남자의 아들들은 오늘 행복하다.", sec: "L3.15" },
+  { ar: "بَيْتُ حَسَنٍ الْجَمِيلِ وَاسِعٌ", roman: "baytu hasanini l-jamiili waasiun", ko: "잘생긴 하싼의 집은 넓다.", sec: "L3.15" },
+  { ar: "قَمِيصُ الْمُدَرِّسِ وَسِخٌ", roman: "qamiisu l-mudarrisi wasikhun", ko: "그 교사의 셔츠는 더럽다.", sec: "L3.15" },
+  { ar: "قَمِيصُ الْمُدَرِّسِ الْجَدِيدُ جَمِيلٌ", roman: "qamiisu l-mudarrisi l-jadiidu jamiilun", ko: "그 교사의 새 셔츠는 아름답다.", sec: "L3.15" },
+  { ar: "وَجْهُ الْبِنْتِ الصَّغِيرَةِ صَغِيرٌ", roman: "wajhu l-binti s-saghiirati saghiirun", ko: "그 어린 소녀의 얼굴은 작다.", sec: "L3.15" },
+  { ar: "مُدَرِّسُو الْمَدْرَسَةِ الْجُدُدُ مُجْتَهِدُونَ جِدًّا", roman: "mudarrisu l-madrasati l-jududu mujtahiduuna jiddan", ko: "그 학교의 새 교사들은 매우 근면하다.", sec: "L3.15" },
+  { ar: "أَبُو مُحَمَّدٍ الْمُسِنِّ كَرِيمٌ جِدًّا", roman: "abuu muhammadini l-musinni kariimun jiddan", ko: "나이 든 무함마드의 아버지는 매우 관대하다.", sec: "L3.15" },
+  { ar: "غَسَلَ الْخَادِمُ سَيَّارَةَ الْمُدِيرِ وَأَرْضَ مَكْتَبِهِ", roman: "ghasala l-khaadimu sayyaarata l-mudiiri wa-arda maktabihi", ko: "그 하인이 원장의 차와 그의 사무실 바닥을 씻었다.", sec: "L3.15" },
+  { ar: "اَلْأُسْتَاذَةُ ذَاتُ مَالٍ", roman: "al-ustaadhatu dhaatu maalin", ko: "그 여교수는 돈이 많다.", sec: "L3.15" },
+  { ar: "أَخَذْتُ أَخَاكَ مَعِي فِي سَيَّارَتِي إِلَى السُّوقِ", roman: "akhadhtu akhaaka maii fii sayyaaratii ila s-suuqi", ko: "나는 네 형제를 내 차에 태우고 시장에 데려갔다.", sec: "L3.15" },
+  { ar: "هٰذِهِ غُرْفَةٌ ذَاتُ حَمَّامٍ مُسْتَقِلٍّ", roman: "haadhihi ghurfatun dhaatu hammaamin mustaqillin", ko: "이것은 별도의 욕실이 있는 방이다.", sec: "L3.15" },
+  { ar: "مَقْهَاهُ كَبِيرٌ وَمَقْهَايَ صَغِيرٌ", roman: "maqhaahu kabiirun wa-maqhaaya saghiirun", ko: "그의 다방은 크고 내 다방은 작다.", sec: "L3.15" },
+  { ar: "اَلْمُدَرِّسُ الطَّيِّبُ الْقَلْبِ فِي الْمُسْتَشْفَى", roman: "al-mudarrisu t-tayyibu l-qalbi fi l-mustashfaa", ko: "그 마음씨 좋은 교사는 병원에 있다.", sec: "L3.15" },
+  { ar: "أَمَامَ بَيْتِي جُنَيْنَةٌ جَمِيلَةٌ", roman: "amaama baytii junaynatun jamiilatun", ko: "내 집 앞에 아름다운 정원이 있다.", sec: "L3.15" },
+  { ar: "مُعَلِّمُوكَ وَمُعَلِّمِيَّ حَاضِرُونَ", roman: "muallimuuka wa-muallimiyya haadiruuna", ko: "너의 선생님들과 나의 선생님들이 출석했다.", sec: "L3.15" },
+  { ar: "اَلرَّجُلُ ذُو الْمَالِ هُنَاكَ", roman: "ar-rajulu dhu l-maali hunaaka", ko: "그 돈 많은 남자는 저기에 있다.", sec: "L3.15" },
+  { ar: "هُوَ طَالِبٌ سَرِيعُ الْحَرَكَةِ", roman: "huwa taalibun sariiu l-harakati", ko: "그는 동작이 빠른 학생이다.", sec: "L3.15" },
+  { ar: "اَلْبَقَرَةُ ذَاتُ عَيْنَيْنِ كَبِيرَتَيْنِ", roman: "al-baqaratu dhaatu aynayni kabiiratayni", ko: "그 암소는 큰 두 눈을 가지고 있다.", sec: "L3.15" },
+  // ── 제3과 연습2 (한국어 → 아랍어)
+  { ar: "شُبَّاكُ الْبَيْتِ كَبِيرٌ", roman: "shubbaaku l-bayti kabiirun", ko: "그 집의 창은 크다.", sec: "L3.15" },
+  { ar: "رَئِيسُ الْجَامِعَةِ كَرِيمٌ", roman: "raiisu l-jaamiati kariimun", ko: "그 대학의 총장은 관대하다.", sec: "L3.15" },
+  { ar: "مِينَاءُ إِنْتُشُونْ قَرِيبٌ مِنْ هُنَا", roman: "miinaau intushuun qariibun min hunaa", ko: "인천항은 여기서 가깝다.", sec: "L3.15" },
+  { ar: "أَبُو الْوَلَدِ غَنِيٌّ جِدًّا", roman: "abu l-waladi ghaniyyun jiddan", ko: "그 소년의 아버지는 매우 부유하다.", sec: "L3.15" },
+  { ar: "ضَرَبْتُ أَخَا الْوَلَدِ", roman: "darabtu akha l-waladi", ko: "내가 그 소년의 형을 때렸다.", sec: "L3.15" },
+  { ar: "يَدَاكَ قَوِيَّتَانِ وَيَدَايَ ضَعِيفَتَانِ", roman: "yadaaka qawiyyataani wa-yadaaya daiifataani", ko: "너의 두 손은 힘이 세고 나의 두 손은 약하다.", sec: "L3.15" },
+  { ar: "مُدَرِّسُو الْمَدْرَسَةِ الْجَدِيدَةِ سُعَدَاءُ", roman: "mudarrisu l-madrasati l-jadiidati suadaau", ko: "그 새 학교의 교사들은 행복하다.", sec: "L3.15" },
+  { ar: "شَنْطَتُكَ الْجَدِيدَةُ جَمِيلَةٌ", roman: "shantatuka l-jadiidatu jamiilatun", ko: "너의 새 가방은 예쁘다.", sec: "L3.15" },
+  { ar: "عَيْنَا الْمُمَرِّضَةِ جَمِيلَتَانِ جِدًّا", roman: "aynaa l-mumarridati jamiilataani jiddan", ko: "그 여자 간호사의 두 눈은 매우 예쁘다.", sec: "L3.15" },
+  { ar: "مُوَظَّفُو الْجَامِعَةِ مَشْغُولُونَ جِدًّا الْيَوْمَ", roman: "muwazzafu l-jaamiati mashghuuluuna jiddan al-yawma", ko: "그 대학의 직원들은 오늘 매우 바쁘다.", sec: "L3.15" },
+  { ar: "مُدَرِّسُو قِسْمِنَا لُطَفَاءُ جِدًّا", roman: "mudarrisuu qisminaa lutafaau jiddan", ko: "우리 학과의 선생님들은 매우 친절하시다.", sec: "L3.15" },
+  { ar: "اَلْأَقْسَامُ سَهْلَةُ الْفَهْمِ جِدًّا", roman: "al-aqsaamu sahlatu l-fahmi jiddan", ko: "그 학과들은 매우 이해하기 쉽다.", sec: "L3.15" },
 ];
 
 // 형용사 3패턴 세트: [비한정 명사+형용사, 한정 명사+형용사, 한정 주부+비한정 술부]
@@ -892,7 +970,7 @@ const LESSONS = [
   {
     id: "L3",
     title: "제3과 — 인칭대명사와 연결형",
-    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 1~14페이지 (اَلْأَسْمَاءُ الْخَمْسَةُ 직전까지)",
+    sub: "اَلدَّرْسُ الثَّالِثُ · 교재 전체 완료 (연습 1·2 포함)",
     sections: [
       {
         id: "L3.1",
@@ -1109,12 +1187,74 @@ const LESSONS = [
         words: ["haadhaa", "haadhihi", "haaulaai", "li", "madkhal", "shanta", "lugha", "majma", "raiis", "saabiq"],
         sec: "L3.12",
       },
+      {
+        id: "L3.13",
+        title: "2.7 다섯 명사 (اَلْأَسْمَاءُ الْخَمْسَةُ)",
+        rule: "أَبٌ·أَخٌ·حَمٌ·ذُو·فَمٌ 다섯은 연결형의 <b>전 연결어</b>가 되면 세 격이 모두 <b>장모음</b>으로 바뀐다. 주격 ـُو, 목적격 ـَا, 소유격 ـِي 다. 접미 인칭대명사가 붙을 때도 같다.<br><b>ذُو</b> 는 혼자 못 쓰고 항상 연결형으로만 쓰여 '~을 가진'이라는 뜻을 만든다. 앞 명사의 성·수·격에 맞춘다.",
+        table: {
+          note: "ذُو 의 변화표입니다. 교재처럼 <b>오른쪽에서 왼쪽</b>으로 단수 → 쌍수 → 복수 순입니다.",
+          cols: [
+            { ar: "اَلْمُفْرَدُ 남", ko: "단수 남" },
+            { ar: "اَلْمُفْرَدُ 여", ko: "단수 여" },
+            { ar: "اَلْمُثَنَّى 남", ko: "쌍수 남" },
+            { ar: "اَلْمُثَنَّى 여", ko: "쌍수 여" },
+            { ar: "اَلْجَمْعُ 남", ko: "복수 남" },
+            { ar: "اَلْجَمْعُ 여", ko: "복수 여" },
+          ],
+          rows: [
+            { ar: "اَلرَّفْعُ", ko: "주격", cells: ["ذُو", "ذَاتُ", "ذَوَا", "ذَوَاتَا", "ذَوُو", "ذَوَاتُ"] },
+            { ar: "اَلْجَرُّ", ko: "소유격", cells: ["ذِي", "ذَاتِ", "ذَوَيْ", "ذَوَاتَيْ", "ذَوِي", "ذَوَاتِ"] },
+            { ar: "اَلنَّصْبُ", ko: "목적격", cells: ["ذَا", "ذَاتَ", "ذَوَيْ", "ذَوَاتَيْ", "ذَوِي", "ذَوَاتِ"] },
+          ],
+        },
+        rows: [
+          { ar: "أَبُو / أَبَا / أَبِي الْوَلَدِ", roman: "abuu / abaa / abii l-waladi", ko: "그 소년의 아버지 (주·목·소유격)", note: "세 격이 모두 장모음" },
+          { ar: "أَخُو / أَخَا / أَخِي الطَّالِبِ", roman: "akhuu / akhaa / akhii t-taalibi", ko: "그 학생의 형제", note: "" },
+          { ar: "فُوهَا صَغِيرٌ", roman: "fuuhaa saghiirun", ko: "그녀의 입은 작다", note: "فَمٌ 은 فُو·فَا·فِي. 현대에는 فَمُهَا 로도 쓴다" },
+          { ar: "ذُو مَالٍ", roman: "dhuu maalin", ko: "돈 많은 (비한정)", note: "ذُو 는 홀로 못 쓴다" },
+          { ar: "اَلرَّجُلُ ذُو الْمَالِ", roman: "ar-rajulu dhu l-maali", ko: "그 돈 많은 남자", note: "앞 명사가 한정이면 뒤도 한정" },
+          { ar: "اَلْأُسْتَاذَةُ ذَاتُ مَالٍ", roman: "al-ustaadhatu dhaatu maalin", ko: "그 여교수는 돈이 많다", note: "여성 → ذَاتُ" },
+          { ar: "اَلسِّيَاسِيُّونَ ذَوُو نُفُوذٍ", roman: "as-siyaasiyyuuna dhawuu nufuudhin", ko: "그 정치인들은 영향력이 있다", note: "남성 복수 → ذَوُو" },
+        ],
+        words: ["ab", "akh", "ham", "fam", "dhuu", "maal", "nufuudh", "siyaasiyy"],
+        sec: "L3.13",
+      },
+      {
+        id: "L3.14",
+        title: "2.8 한정(اَلْمَعْرِفَةُ)의 세 가지 경우",
+        rule: "제3과 전체를 한 장으로 묶는 자리다. 명사가 한정되는 길은 <b>셋뿐</b>이다. ① 정관사 اَلْ 를 가질 때 ② 접미 인칭대명사를 가질 때 ③ 뒤에 한정 명사와 연결형을 이룰 때. '한정'이라는 말이 나오면 이 셋을 떠올리면 된다.",
+        rows: [
+          { ar: "اَلْبَيْتُ", roman: "al-baytu", ko: "그 집", note: "① 정관사" },
+          { ar: "بَيْتُكَ", roman: "baytuka", ko: "너의 집", note: "② 접미 인칭대명사 — 정관사가 없어도 한정" },
+          { ar: "بَيْتُ الْوَلَدِ", roman: "baytu l-waladi", ko: "그 소년의 집", note: "③ 한정 명사와의 연결형" },
+        ],
+        sec: "L3.14",
+      },
+      {
+        id: "L3.15",
+        title: "연습 1 · 2 (제3과 마무리)",
+        rule: "제3과 전체를 한 번에 되짚는 문제다. 연결형·지시사·다섯 명사·쌍수의 ن 탈락이 섞여 나온다. 막히면 어느 절에서 나온 규칙인지부터 떠올려 보자.",
+        words: ["muhandis", "qism", "wasikh", "musinn", "kariim", "latiif", "mudiir", "hammaam",
+          "mustaqill", "junayna", "baqara", "miinaa", "intushuun", "ghasala", "akhadha"],
+        sec: "L3.15",
+      },
     ],
   },
 ];
 
 // ── 변경 내역 (맨 위가 최신). VERSION 은 첫 항목의 v 를 쓴다.
 const CHANGELOG = [
+  {
+    v: "2.1",
+    date: "2026-10-25",
+    title: "제3과 완결 🎉",
+    items: [
+      "<b>2.7 다섯 명사</b>(اَلْأَسْمَاءُ الْخَمْسَةُ) — أَبٌ·أَخٌ·حَمٌ·ذُو·فَمٌ 는 연결형 앞에 서면 세 격이 모두 장모음이 됩니다. ذُو 변화표도 교재 그대로 넣었습니다",
+      "<b>2.8 한정의 세 가지 경우</b> — 정관사 / 접미 인칭대명사 / 한정 명사와의 연결형. 제3과 전체를 한 장으로 묶는 자리입니다",
+      "<b>연습 1·2</b> 37문장 — 연결형·지시사·다섯 명사·쌍수의 ن 탈락이 섞여 나옵니다",
+      "<b>제3과가 끝났습니다.</b> 절 15개, 단어 303개, 문장 299개",
+    ],
+  },
   {
     v: "2.0",
     date: "2026-10-16",

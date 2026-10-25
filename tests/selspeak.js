@@ -255,14 +255,14 @@ t("복수형 퀴즈: 보기 4개", (qh.match(/class="choice"/g)||[]).length>=4, 
 // ── 제3과
 const L3=LESSONS.find(l=>l.id==="L3");
 t("제3과 있음", !!L3);
-t("제3과 절 수", L3.sections.length===12, String(L3.sections.length));
+t("제3과 절 수", L3.sections.length===15, String(L3.sections.length));
 t("절이 참조하는 단어가 전부 단어장에 있음",
   L3.sections.flatMap(s=>s.words||[]).every(w=>VOCAB.some(v=>v.id===w)),
   L3.sections.flatMap(s=>s.words||[]).filter(w=>!VOCAB.some(v=>v.id===w)).join(","));
 t("절이 선언한 sec 마다 예문이 있음",
   L3.sections.filter(s=>s.sec).every(s=>EXAMPLES.some(e=>e.sec===s.sec)),
   L3.sections.filter(s=>s.sec&&!EXAMPLES.some(e=>e.sec===s.sec)).map(s=>s.id).join(","));
-t("제3과 예문 117개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===117,
+t("제3과 예문 168개", EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length===168,
   String(EXAMPLES.filter(e=>e.sec&&e.sec.startsWith("L3")).length));
 currentView="lesson"; views.lesson("L3.5");
 const lh=ELS["#main"].innerHTML;
@@ -316,7 +316,7 @@ t("비사실 연결형 절 열림", /비사실 연결형/.test(nh));
 t("حَسَنُ الْوَجْهِ 예시", nh.indexOf("حَسَنُ الْوَجْهِ")>=0);
 t("수식/술어 대비 예시", nh.indexOf("اَلْوَلَدُ الْحَسَنُ الْوَجْهِ")>=0 && nh.indexOf("اَلْوَلَدُ حَسَنُ الْوَجْهِ")>=0);
 t("유제7 10문장", EXAMPLES.filter(e=>e.sec==="L3.8").length===10, String(EXAMPLES.filter(e=>e.sec==="L3.8").length));
-t("제3과 12절", LESSONS.find(l=>l.id==="L3").sections.length===12);
+t("제3과 15절", LESSONS.find(l=>l.id==="L3").sections.length===15);
 
 
 // ── 업데이트 팝업
@@ -361,7 +361,7 @@ closeWhatsNew(); localStorage.setItem("seenVer",VERSION);
 
 // ── 어근별 보기
 const withRoot=VOCAB.filter(w=>w.root);
-t("어근 239개 단어에 붙음", withRoot.length===239, String(withRoot.length));
+t("어근 258개 단어에 붙음", withRoot.length===258, String(withRoot.length));
 t("어근 있으면 뜻풀이도 있음", withRoot.every(w=>w.rootKo), withRoot.filter(w=>!w.rootKo).map(w=>w.id).join(","));
 t("어근은 자음 사이 공백 형식", withRoot.every(w=>/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)),
   withRoot.filter(w=>!/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)).map(w=>w.id+":"+w.root).join(","));
@@ -442,6 +442,35 @@ t("지시어 네 개 모두 있음",
   ["haadhaa","haadhihi","haaulaai","dhaalika"].every(i=>VOCAB.some(w=>w.id===i)));
 t("رَئِيسٌ 가 ر أ س 식구", VOCAB.find(w=>w.id==="raiis").root==="ر أ س");
 t("مَجْمَعٌ 가 ج م ع 식구", VOCAB.find(w=>w.id==="majma").root==="ج م ع");
+
+
+// ── 제3과 마무리
+const L3f=LESSONS.find(l=>l.id==="L3");
+t("제3과 sub 가 완료로", /완료/.test(L3f.sub), L3f.sub);
+["L3.13","L3.14","L3.15"].forEach(id=>t(id+" 있음", !!L3f.sections.find(x=>x.id===id)));
+const s13=L3f.sections.find(x=>x.id==="L3.13");
+t("ذُو 변화표 있음", !!s13.table);
+t("ذُو 표 3행(주·소유·목적격)", s13.table.rows.length===3, String(s13.table.rows.length));
+t("ذُو 표 6열(단·쌍·복 × 남녀)", s13.table.cols.length===6, String(s13.table.cols.length));
+t("ذُو 표 칸이 전부 채워짐", s13.table.rows.every(r=>r.cells.length===6 && r.cells.every(c=>c&&c.trim())));
+t("주격 단수 남이 ذُو", s13.table.rows[0].cells[0]==="ذُو", s13.table.rows[0].cells[0]);
+t("주격 단수 여가 ذَاتُ", s13.table.rows[0].cells[1]==="ذَاتُ", s13.table.rows[0].cells[1]);
+t("연습 37문장", EXAMPLES.filter(e=>e.sec==="L3.15").length===37, String(EXAMPLES.filter(e=>e.sec==="L3.15").length));
+t("한정 세 경우 3문장", EXAMPLES.filter(e=>e.sec==="L3.14").length===3);
+currentView="lesson"; views.lesson("L3.13");
+const h13=ELS["#main"].innerHTML;
+t("다섯 명사 절에 표가 그려짐", /table class="gram"/.test(h13));
+t("أَبُو / أَبَا / أَبِي 예시", h13.indexOf("أَبُو / أَبَا / أَبِي الْوَلَدِ")>=0);
+views.lesson("L3.14");
+t("한정 세 경우 규칙", /정관사/.test(ELS["#main"].innerHTML));
+views.lesson("L3.15");
+t("연습 절이 열림", /연습/.test(ELS["#main"].innerHTML));
+const n25=VOCAB.filter(w=>w.date==="2026-10-25");
+t("10/25 신규 20개", n25.length===20, String(n25.length));
+t("지명 빼고 전부 어근 있음", n25.filter(w=>w.pos!=="지명").every(w=>w.root),
+  n25.filter(w=>w.pos!=="지명"&&!w.root).map(w=>w.id).join(","));
+t("نُفُوذٌ 가 نَافِذَةٌ 와 같은 어근", VOCAB.find(w=>w.id==="nufuudh").root===VOCAB.find(w=>w.id==="naafidha").root);
+t("مُدِيرٌ 가 دَارٌ 와 같은 어근", VOCAB.find(w=>w.id==="mudiir").root===VOCAB.find(w=>w.id==="daar").root);
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
