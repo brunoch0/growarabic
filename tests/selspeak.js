@@ -492,6 +492,43 @@ t("보충 단어도 연습 절에 연결", ["qaliil","samia","madaha"].every(i =
 t("VOCAB 306개", VOCAB.length===306, String(VOCAB.length));
 
 
+// ── 변형된 형태 분석 (화면에서 드래그했을 때)
+const ana = (ar) => { const h = lookupAr(ar); return h ? h.w.id + (h.notes&&h.notes.length ? " ["+h.notes.join("+")+"]" : "") : null; };
+const CASES = [
+  ["قِسْمِنَا", "qism", "우리의"],              // 사용자가 드래그했다 실패한 그 형태
+  ["مُدَرِّسُو", "mudarris", "남성 복수"],
+  ["مُوَظَّفُو", "muwazzaf", "남성 복수"],
+  ["عَيْنَا", "ayn", "쌍수"],
+  ["يَدَاكَ", "yad", "너의"],
+  ["يَدَايَ", "yad", "나의"],
+  ["بَيْتُهَا", "bayt", "그녀의"],
+  ["اِسْمُكَ", "ism", "너의"],
+  ["مَدْرَسَتُهُمْ", "madrasa", "그들의"],
+  ["شَنْطَتُكَ", "shanta", "너의"],
+  ["مُعَلِّمُوكَ", "muallim", "너의"],
+  ["بُيُوتُنَا", "bayt", "우리의"],
+  ["لِلْبَيْتِ", "bayt", "전치사"],
+  ["وَالْمُدَرِّسُ", "mudarris", "정관사"],
+  ["اَلْأَقْسَامُ", "qism", null],
+];
+CASES.forEach(([ar, id, note]) => {
+  const h = lookupAr(ar);
+  t("드래그 " + ar + " → " + id, h && h.w.id === id, h ? h.w.id : "못찾음");
+  if (note) t("   붙은 것 표시: " + note, h && (h.notes||[]).join("+").includes(note), h ? (h.notes||[]).join("+") : "-");
+});
+t("원형 그대로는 설명이 안 붙음", (lookupAr("بَيْتٌ").notes||[]).length===0);
+t("짧은 말을 과하게 깎지 않음 — هُنَا", lookupAr("هُنَا").w.id==="hunaa", lookupAr("هُنَا").w.id);
+t("كُرْسِيٌّ 가 ي 로 안 깎임", lookupAr("كُرْسِيٌّ").w.id==="kursiyy", lookupAr("كُرْسِيٌّ").w.id);
+t("모르는 말은 여전히 null", lookupAr("زززز")===null);
+
+// 팝업에 설명이 실제로 그려지는지
+sel("قِسْمِنَا");
+const ph = pop().innerHTML;
+t("팝업에 원형 قِسْمٌ", ph.indexOf("قِسْمٌ")>=0);
+t("팝업에 '우리의' 설명", /우리의/.test(ph));
+t("팝업에 어근도 같이", /sp-root/.test(ph));
+
+
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
 if (bad.length) { console.log("\nFAIL:"); bad.forEach(x => console.log("  \u2717 " + x)); process.exit(1); }
 console.log(`\n${ok.length}/${ok.length} \ud1b5\uacfc`);

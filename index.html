@@ -182,6 +182,14 @@
   #selPop .sp-hit .arabic { font-size: 24px; }
   #selPop .sp-hit b { font-size: 16px; }
   #selPop .sp-hit small { color: var(--sub); font-size: 12px; }
+  #selPop .sp-note {
+    flex-basis: 100%; font-size: 12.5px; font-weight: 600; color: var(--accent);
+    background: var(--accent-soft); border-radius: 8px; padding: 2px 8px; margin-top: 3px;
+    display: inline-block; width: fit-content;
+  }
+  #selPop .sp-root {
+    font-size: 13px; letter-spacing: 3px; color: var(--sub); direction: rtl; margin-inline-start: auto;
+  }
   #selPop .sp-none { padding: 9px 14px; border-top: 1px solid var(--line); color: var(--sub); font-size: 13px; }
   header {
     display: flex; align-items: center; gap: 12px;
@@ -402,11 +410,51 @@ function dict() {
   return DICT;
 }
 // 앞에 붙는 한정관사 اَلْ 과 접속사 وَ / فَ 는 떼고도 찾아본다
+// 앞뒤에 붙은 것을 하나씩 떼어가며 원형을 찾고, 무엇이 붙어 있었는지 같이 돌려준다
+const AR_PRE = [
+  ["وال", "접속사 وَ + 정관사"], ["فال", "접속사 فَ + 정관사"], ["بال", "전치사 بِ + 정관사"],
+  ["كال", "전치사 كَ + 정관사"], ["لل", "전치사 لِ + 정관사"], ["ال", "정관사 اَلْ"],
+  ["و", "접속사 وَ"], ["ف", "접속사 فَ"], ["ب", "전치사 بِ"], ["ك", "전치사 كَ"], ["ل", "전치사 لِ"],
+];
+const AR_PRON = [
+  ["هما", "그 둘의"], ["كما", "너희 둘의"], ["هم", "그들의"], ["هن", "그녀들의"],
+  ["كم", "너희들의"], ["كن", "너희들(여)의"], ["ها", "그녀의"], ["نا", "우리의"],
+  ["ه", "그의"], ["ك", "너의"], ["ي", "나의"],
+];
+const AR_NUM = [
+  ["ان", "쌍수"], ["ون", "남성 복수"], ["ات", "여성 복수"], ["ين", "쌍수·복수 (목적·소유격)"],
+  ["ا", "쌍수 — 연결형이라 ن 이 빠짐"], ["و", "남성 복수 — 연결형이라 ن 이 빠짐"],
+];
 function lookupAr(token) {
-  const d = dict(), k = arKey(token);
-  if (!k) return null;
-  for (const c of [k, k.replace(/^ال/, ""), k.replace(/^[وفبكل]/, ""), k.replace(/^[وف]ال/, ""), k.replace(/^[بكل]ال/, "")]) {
-    if (c && d.has(c)) return d.get(c);
+  const d = dict(), base = arKey(token);
+  if (!base) return null;
+  const tries = [];
+  const push = (k, notes) => { if (k && k.length >= 2) tries.push({ k, notes }); };
+  const stripPre = (k) => {
+    for (const [p, n] of AR_PRE) if (k.startsWith(p) && k.length > p.length + 1) return [k.slice(p.length), n];
+    return null;
+  };
+  // 접미대명사가 붙으면 여성 어미 ة 가 ت 로 바뀐다 (مَدْرَسَةٌ → مَدْرَسَتُهُمْ)
+  const addWithPre = (k, notes) => {
+    const forms = k.endsWith("ت") ? [k, k.slice(0, -1) + "ة"] : [k];
+    for (const f of forms) { push(f, notes); const p = stripPre(f); if (p) push(p[0], [p[1], ...notes]); }
+  };
+
+  addWithPre(base, []);                                   // 그대로
+  for (const [sfx, n] of AR_PRON) {                       // 접미 인칭대명사
+    if (!base.endsWith(sfx) || base.length <= sfx.length + 1) continue;
+    const k1 = base.slice(0, -sfx.length);
+    addWithPre(k1, [n]);
+    for (const [nu, nn] of AR_NUM) {                      // 대명사 + 수 어미 (يَدَاكَ)
+      if (k1.endsWith(nu) && k1.length > nu.length + 1) addWithPre(k1.slice(0, -nu.length), [nn, n]);
+    }
+  }
+  for (const [nu, nn] of AR_NUM) {                        // 수 어미만
+    if (base.endsWith(nu) && base.length > nu.length + 1) addWithPre(base.slice(0, -nu.length), [nn]);
+  }
+  for (const t of tries) {
+    const hit = d.get(t.k);
+    if (hit) return { w: hit.w, kind: hit.kind, notes: t.notes };
   }
   return null;
 }
@@ -442,9 +490,11 @@ function showSelSpeak() {
     if (hits.length >= 4) break;
   }
   selPop.innerHTML = `<button class="sp-say">🔊 발음 듣기</button>` + (hits.length
-    ? hits.map(({ w, kind }) => `<div class="sp-hit" data-id="${w.id}">
+    ? hits.map(({ w, kind, notes }) => `<div class="sp-hit" data-id="${w.id}">
         <span class="arabic">${w.ar}</span><b>${w.ko}</b>
-        <small>${w.roman}${kind ? " · " + kind : ""}${w.en ? " · " + w.en : ""}</small></div>`).join("")
+        <small>${w.roman}${kind ? " · " + kind : ""}</small>
+        ${(notes || []).length ? `<span class="sp-note">${notes.join(" + ")}</span>` : ""}
+        ${w.root ? `<span class="sp-root arabic">${w.root}</span>` : ""}</div>`).join("")
     : `<div class="sp-none">단어장에 없는 말이에요 — 발음만 들을 수 있습니다</div>`);
   selPop.style.display = "block";
   const w = selPop.offsetWidth || 220, h = selPop.offsetHeight || 90;
