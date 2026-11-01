@@ -16,7 +16,7 @@ const VOCAB = [
   { id: "madrasa", ar: "مَدْرَسَةٌ", roman: "madrasatun", root: "د ر س", rootKo: "공부하다", ko: "학교", en: "school", pos: "명사", gender: "f", pl: "مَدَارِسُ", plRoman: "madaarisu", plPat: "مَفَاعِلُ", note: "타마르부타 ة", cat: "장소", date: "2026-07-03" },
   { id: "ghurfa", ar: "غُرْفَةٌ", roman: "ghurfatun", root: "غ ر ف", rootKo: "퍼내다", ko: "방", en: "room", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-07-03" },
   { id: "daar", ar: "دَارٌ", roman: "daarun", root: "د و ر", rootKo: "돌다 · 집", ko: "집", en: "house", pos: "명사", gender: "f", note: "관용적으로 여성인 명사", cat: "장소", date: "2026-07-03" },
-  { id: "haqiiba", ar: "حَقِيبَةٌ", roman: "haqiibatun", root: "ح ق ب", rootKo: "가방", ko: "가방", en: "bag", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "사물", date: "2026-07-03" },
+  { id: "haqiiba", ar: "حَقِيبَةٌ", roman: "haqiibatun", pl: "حَقَائِبُ", plRoman: "haqaaibu", plPat: "فَعَالِيلُ", root: "ح ق ب", rootKo: "가방", ko: "가방", en: "bag", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "사물", date: "2026-07-03" },
 
   // ── 2. 사람 / 관계
   { id: "umm", ar: "أُمٌّ", roman: "ummun", root: "أ م م", rootKo: "어미", ko: "어머니", en: "mother", pos: "명사", gender: "f", pl: "أُمَّهَاتٌ", plRoman: "ummahaatun", plPat: "ـَاتٌ", note: "의미상 여성", cat: "사람", date: "2026-07-03" },
@@ -37,10 +37,10 @@ const VOCAB = [
   { id: "sarii", ar: "سَرِيعٌ", roman: "sarii'un", root: "س ر ع", rootKo: "빠르다", fem: "سَرِيعَةٌ", femRoman: "sarii'atun", ko: "빠른", en: "fast", pos: "형용사", gender: "pair", date: "2026-07-10" },
   { id: "naziif", ar: "نَظِيفٌ", roman: "naziifun", root: "ن ظ ف", rootKo: "깨끗하다", fem: "نَظِيفَةٌ", femRoman: "naziifatun", ko: "깨끗한", en: "clean", pos: "형용사", gender: "pair", date: "2026-07-10" },
   { id: "arabiyy", ar: "عَرَبِيٌّ", roman: "arabiyyun", root: "ع ر ب", rootKo: "아랍", fem: "عَرَبِيَّةٌ", femRoman: "arabiyyatun", ko: "아랍의, 아랍인", en: "Arab / Arabic", pos: "형용사", gender: "pair", date: "2026-07-10" },
-  { id: "qasiir", ar: "قَصِيرٌ", roman: "qasiirun", root: "ق ص ر", rootKo: "짧다", fem: "قَصِيرَةٌ", femRoman: "qasiiratun", ko: "짧은, 키 작은", en: "short", pos: "형용사", gender: "pair", date: "2026-07-10" },
+  { id: "qasiir", ar: "قَصِيرٌ", roman: "qasiirun", pl: "قِصَارٌ", plRoman: "qisaarun", plPat: "فِعَالٌ", root: "ق ص ر", rootKo: "짧다", fem: "قَصِيرَةٌ", femRoman: "qasiiratun", ko: "짧은, 키 작은", en: "short", pos: "형용사", gender: "pair", date: "2026-07-10" },
   { id: "faqiir", ar: "فَقِيرٌ", roman: "faqiirun", root: "ف ق ر", rootKo: "가난하다", fem: "فَقِيرَةٌ", femRoman: "faqiiratun", ko: "가난한", en: "poor", pos: "형용사", gender: "pair", pl: "فُقَرَاءُ", plRoman: "fuqaraa'u", plPat: "فُعَلَاءُ", date: "2026-07-10" },
-  { id: "jadiid", ar: "جَدِيدٌ", roman: "jadiidun", root: "ج د د", rootKo: "새롭다 · 진지하다", fem: "جَدِيدَةٌ", femRoman: "jadiidatun", ko: "새로운", en: "new", pos: "형용사", gender: "pair", date: "2026-07-10" },
-  { id: "qadiim", ar: "قَدِيمٌ", roman: "qadiimun", root: "ق د م", rootKo: "앞서다 · 오래되다", fem: "قَدِيمَةٌ", femRoman: "qadiimatun", ko: "낡은, 오래된", en: "old", pos: "형용사", gender: "pair", date: "2026-07-10" },
+  { id: "jadiid", ar: "جَدِيدٌ", roman: "jadiidun", pl: "جُدُدٌ", plRoman: "jududun", plPat: "فُعْلٌ", root: "ج د د", rootKo: "새롭다 · 진지하다", fem: "جَدِيدَةٌ", femRoman: "jadiidatun", ko: "새로운", en: "new", pos: "형용사", gender: "pair", date: "2026-07-10" },
+  { id: "qadiim", ar: "قَدِيمٌ", roman: "qadiimun", pl: "قُدَمَاءُ", plRoman: "qudamaau", plPat: "فُعَلَاءُ", root: "ق د م", rootKo: "앞서다 · 오래되다", fem: "قَدِيمَةٌ", femRoman: "qadiimatun", ko: "낡은, 오래된", en: "old", pos: "형용사", gender: "pair", date: "2026-07-10" },
   { id: "shadiid", ar: "شَدِيدٌ", roman: "shadiidun", root: "ش د د", rootKo: "강하다", fem: "شَدِيدَةٌ", femRoman: "shadiidatun", ko: "강한, 질긴", en: "strong", pos: "형용사", gender: "pair", date: "2026-07-17" },
   { id: "khafiif", ar: "خَفِيفٌ", roman: "khafiifun", root: "خ ف ف", rootKo: "가볍다", fem: "خَفِيفَةٌ", femRoman: "khafiifatun", ko: "가벼운", en: "light", pos: "형용사", gender: "pair", date: "2026-07-17" },
   { id: "samiin", ar: "سَمِينٌ", roman: "samiinun", root: "س م ن", rootKo: "살찌다", fem: "سَمِينَةٌ", femRoman: "samiinatun", ko: "살찐", en: "fat", pos: "형용사", gender: "pair", date: "2026-07-17" },
@@ -71,7 +71,7 @@ const VOCAB = [
   { id: "saaa", ar: "سَاعَةٌ", roman: "saa'atun", root: "س و ع", rootKo: "때 · 시각", ko: "시계, 시간", en: "watch / time", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "사물", date: "2026-07-24" },
   { id: "yad", ar: "يَدٌ", roman: "yadun", root: "ي د ي", rootKo: "손", ko: "손", en: "hand", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
   { id: "ayn", ar: "عَيْنٌ", roman: "aynun", root: "ع ي ن", rootKo: "눈 · 샘", ko: "눈", en: "eye", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
-  { id: "rijl", ar: "رِجْلٌ", roman: "rijlun", root: "ر ج ل", rootKo: "걷다 · 다리", ko: "다리", en: "leg", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
+  { id: "rijl", ar: "رِجْلٌ", roman: "rijlun", pl: "أَرْجُلٌ", plRoman: "arjulun", plPat: "أَفْعُلٌ", root: "ر ج ل", rootKo: "걷다 · 다리", ko: "다리", en: "leg", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
   { id: "qadam", ar: "قَدَمٌ", roman: "qadamun", root: "ق د م", rootKo: "앞서다 · 오래되다", ko: "발", en: "foot", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
   { id: "udhun", ar: "أُذُنٌ", roman: "udhunun", root: "أ ذ ن", rootKo: "듣다", ko: "귀", en: "ear", pos: "명사", gender: "f", note: "몸에서 쌍으로 있는 부위 → 여성", cat: "신체", date: "2026-07-24" },
   { id: "shams", ar: "شَمْسٌ", roman: "shamsun", root: "ش م س", rootKo: "해", ko: "태양", en: "sun", pos: "명사", gender: "f", note: "관용적으로 여성인 명사", cat: "자연", date: "2026-07-24" },
@@ -119,7 +119,7 @@ const VOCAB = [
   { id: "shaqqa", ar: "شَقَّةٌ", roman: "shaqqatun", root: "ش ق ق", rootKo: "쪼개다", ko: "아파트", en: "apartment", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-08-02" },
   { id: "dawla", ar: "دَوْلَةٌ", roman: "dawlatun", root: "د و ل", rootKo: "돌다 · 나라", ko: "국가", en: "country / state", pos: "명사", gender: "f", note: "타마르부타 ة. 나라/도시를 여성으로 보는 이유와 연결", date: "2026-08-02" },
   { id: "walad", ar: "وَلَدٌ", roman: "waladun", root: "و ل د", rootKo: "낳다", ko: "소년", en: "boy", pos: "명사", gender: "m", cat: "사람", pl: "أَوْلَادٌ", plRoman: "awlaadun", plPat: "أَفْعَالٌ", date: "2026-08-02" },
-  { id: "fasl", ar: "فَصْلٌ", roman: "faslun", root: "ف ص ل", rootKo: "나누다", ko: "교실, 학기/계절", en: "classroom / season", pos: "명사", gender: "m", note: "في الفصلِ 에서 전치사 뒤라 소유격 ـِ", cat: "장소", date: "2026-08-02" },
+  { id: "fasl", ar: "فَصْلٌ", roman: "faslun", pl: "فُصُولٌ", plRoman: "fusuulun", plPat: "فُعُولٌ", root: "ف ص ل", rootKo: "나누다", ko: "교실, 학기/계절", en: "classroom / season", pos: "명사", gender: "m", note: "في الفصلِ 에서 전치사 뒤라 소유격 ـِ", cat: "장소", date: "2026-08-02" },
   { id: "katif", ar: "كَتِفٌ", roman: "katifun", root: "ك ت ف", rootKo: "어깨", ko: "어깨", en: "shoulder", pos: "명사", gender: "f", note: "쌍으로 있는 신체 부위 → 여성", cat: "신체", date: "2026-08-02" },
   { id: "fakhidh", ar: "فَخِذٌ", roman: "fakhidhun", root: "ف خ ذ", rootKo: "넓적다리", ko: "허벅지", en: "thigh", pos: "명사", gender: "f", note: "쌍으로 있는 신체 부위 → 여성", cat: "신체", date: "2026-08-02" },
   { id: "saaq", ar: "سَاقٌ", roman: "saaqun", root: "س و ق", rootKo: "몰다 · 시장", ko: "정강이, 다리", en: "shin / leg", pos: "명사", gender: "f", note: "쌍으로 있는 신체 부위 → 여성", cat: "신체", date: "2026-08-02" },
@@ -233,7 +233,7 @@ const VOCAB = [
   { id: "antunna", ar: "أَنْتُنَّ", roman: "antunna", ko: "너희들은 (여)", en: "you (f. pl.)", pos: "대명사", gender: "f", date: "2026-09-30", img: "👭" },
   { id: "hum", ar: "هُمْ", roman: "hum", ko: "그들은 (남)", en: "they (m.)", pos: "대명사", gender: "m", date: "2026-09-30", img: "👨‍👨‍👦" },
   { id: "ism", ar: "اِسْمٌ", roman: "ismun", root: "س م و", rootKo: "높다", ko: "이름", en: "name", pos: "명사", gender: "m", pl: "أَسْمَاءٌ", plRoman: "asmaaun", plPat: "أَفْعَالٌ", date: "2026-09-30", img: "📛" },
-  { id: "qarya", ar: "قَرْيَةٌ", roman: "qaryatun", root: "ق ر ي", rootKo: "마을", ko: "마을", en: "village", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-09-30", img: "🏘️" },
+  { id: "qarya", ar: "قَرْيَةٌ", roman: "qaryatun", pl: "قُرًى", plRoman: "quran", plPat: "فُعْلٌ", root: "ق ر ي", rootKo: "마을", ko: "마을", en: "village", pos: "명사", gender: "f", note: "타마르부타 ة", cat: "장소", date: "2026-09-30", img: "🏘️" },
   { id: "baiid", ar: "بَعِيدٌ", roman: "baiidun", root: "ب ع د", rootKo: "멀다", fem: "بَعِيدَةٌ", femRoman: "baiidatun", ko: "먼", en: "far", pos: "형용사", gender: "pair", note: "بَعِيدٌ عَنْ = ~에서 먼", date: "2026-09-30", img: "🔭" },
   { id: "jiddan", ar: "جِدًّا", roman: "jiddan", root: "ج د د", rootKo: "새롭다 · 진지하다", ko: "매우, 아주", en: "very", pos: "부사", gender: null, note: "꾸미는 말 뒤에 온다", date: "2026-09-30", img: "💯" },
   { id: "arab", ar: "اَلْعَرَبُ", roman: "al-arabu", root: "ع ر ب", rootKo: "아랍", ko: "아랍인들", en: "the Arabs", pos: "명사", gender: "m", date: "2026-09-30", img: "🧑‍🤝‍🧑" },
@@ -241,9 +241,9 @@ const VOCAB = [
   { id: "kaslaan", ar: "كَسْلَانُ", roman: "kaslaanu", root: "ك س ل", rootKo: "게으르다", fem: "كَسْلَانَةٌ", femRoman: "kaslaanatun", ko: "게으른", en: "lazy", pos: "형용사", gender: "pair", note: "كَسُولٌ 과 같은 뜻", date: "2026-09-30", img: "😪" },
   { id: "naaim", ar: "نَاعِمٌ", roman: "naaimun", root: "ن ع م", rootKo: "부드럽다", fem: "نَاعِمَةٌ", femRoman: "naaimatun", ko: "부드러운", en: "soft", pos: "형용사", gender: "pair", date: "2026-09-30", img: "🧸" },
   { id: "mawjuud", ar: "مَوْجُودٌ", roman: "mawjuudun", root: "و ج د", rootKo: "찾다 · 있다", fem: "مَوْجُودَةٌ", femRoman: "mawjuudatun", ko: "있는, 존재하는", en: "present, existing", pos: "분사", gender: "pair", date: "2026-09-30", img: "📍" },
-  { id: "maqhan", ar: "مَقْهًى", roman: "maqhan", root: "ق ه و", rootKo: "커피", ko: "다방, 카페", en: "cafe", pos: "명사", gender: "m", note: "단음화 알리프 ى 로 끝난다 → 접미대명사가 오면 ا 로 바뀐다 (مَقْهَاهَا)", cat: "장소", date: "2026-09-30", img: "☕" },
-  { id: "daftar", ar: "دَفْتَرٌ", roman: "daftarun", root: "د ف ت ر", rootKo: "공책", ko: "공책", en: "notebook", pos: "명사", gender: "m", date: "2026-09-30", img: "📓" },
-  { id: "hidhaa", ar: "حِذَاءٌ", roman: "hidhaaun", root: "ح ذ و", rootKo: "신 · 본뜨다", ko: "신발", en: "shoe", pos: "명사", gender: "m", date: "2026-09-30", img: "👟" },
+  { id: "maqhan", ar: "مَقْهًى", roman: "maqhan", pl: "مَقَاهٍ", plRoman: "maqaahin", plPat: "مَفَاعِلُ", root: "ق ه و", rootKo: "커피", ko: "다방, 카페", en: "cafe", pos: "명사", gender: "m", note: "단음화 알리프 ى 로 끝난다 → 접미대명사가 오면 ا 로 바뀐다 (مَقْهَاهَا)", cat: "장소", date: "2026-09-30", img: "☕" },
+  { id: "daftar", ar: "دَفْتَرٌ", roman: "daftarun", pl: "دَفَاتِرُ", plRoman: "dafaatiru", plPat: "فَعَالِيلُ", root: "د ف ت ر", rootKo: "공책", ko: "공책", en: "notebook", pos: "명사", gender: "m", date: "2026-09-30", img: "📓" },
+  { id: "hidhaa", ar: "حِذَاءٌ", roman: "hidhaaun", pl: "أَحْذِيَةٌ", plRoman: "ahdhiyatun", plPat: "أَفْعَالٌ", root: "ح ذ و", rootKo: "신 · 본뜨다", ko: "신발", en: "shoe", pos: "명사", gender: "m", date: "2026-09-30", img: "👟" },
   { id: "tifl", ar: "طِفْلٌ", roman: "tiflun", root: "ط ف ل", rootKo: "어리다", fem: "طِفْلَةٌ", femRoman: "tiflatun", ko: "아기, 유아", en: "child, infant", pos: "명사", gender: "pair", date: "2026-09-30", img: "👶" },
   { id: "bukaa", ar: "بُكَاءٌ", roman: "bukaaun", root: "ب ك ي", rootKo: "울다", ko: "울음", en: "crying", pos: "명사", gender: "m", date: "2026-09-30", img: "😭" },
   { id: "raas", ar: "رَأْسٌ", roman: "rasun", root: "ر أ س", rootKo: "머리", ko: "머리, 정상", en: "head, summit", pos: "명사", gender: "m", cat: "신체", date: "2026-09-30", img: "🗻" },
@@ -253,7 +253,7 @@ const VOCAB = [
   { id: "hassaan", ar: "حَسَّانُ", roman: "hassaanu", root: "ح س ن", rootKo: "아름답다 · 좋다", ko: "하싼 (남자 이름)", en: "Hassan", pos: "이름", gender: "m", date: "2026-09-30", img: "🧔" },
 
   { id: "hasan", ar: "حَسَنٌ", roman: "hasanun", root: "ح س ن", rootKo: "아름답다 · 좋다", fem: "حَسَنَةٌ", femRoman: "hasanatun", ko: "잘생긴, 좋은", en: "handsome, good", pos: "형용사", gender: "pair", date: "2026-10-02", img: "😊" },
-  { id: "wajh", ar: "وَجْهٌ", roman: "wajhun", root: "و ج ه", rootKo: "향하다 · 얼굴", ko: "얼굴", en: "face", pos: "명사", gender: "m", cat: "신체", date: "2026-10-02", img: "🙂" },
+  { id: "wajh", ar: "وَجْهٌ", roman: "wajhun", pl: "وُجُوهٌ", plRoman: "wujuuhun", plPat: "فُعُولٌ", root: "و ج ه", rootKo: "향하다 · 얼굴", ko: "얼굴", en: "face", pos: "명사", gender: "m", cat: "신체", date: "2026-10-02", img: "🙂" },
   { id: "sahl", ar: "سَهْلٌ", roman: "sahlun", root: "س ه ل", rootKo: "쉽다 · 평평하다", fem: "سَهْلَةٌ", femRoman: "sahlatun", ko: "쉬운", en: "easy", pos: "형용사", gender: "pair", date: "2026-10-02", img: "👌" },
   { id: "sab", ar: "صَعْبٌ", roman: "sabun", root: "ص ع ب", rootKo: "어렵다", fem: "صَعْبَةٌ", femRoman: "sabatun", ko: "어려운", en: "difficult", pos: "형용사", gender: "pair", date: "2026-10-02", img: "😤" },
   { id: "tayyib", ar: "طَيِّبٌ", roman: "tayyibun", root: "ط ي ب", rootKo: "좋다 · 향기롭다", fem: "طَيِّبَةٌ", femRoman: "tayyibatun", ko: "좋은, 착한", en: "good, kind", pos: "형용사", gender: "pair", note: "طَيِّبُ الْقَلْبِ = 마음씨 좋은", date: "2026-10-02", img: "💗" },
@@ -323,7 +323,7 @@ const VOCAB = [
   { id: "muhandis", ar: "مُهَنْدِسٌ", roman: "muhandisun", root: "ه ن د س", rootKo: "설계하다", fem: "مُهَنْدِسَةٌ", femRoman: "muhandisatun", ko: "기사, 엔지니어", en: "engineer", pos: "명사", gender: "pair", date: "2026-10-25", img: "👷" },
   { id: "qism", ar: "قِسْمٌ", roman: "qismun", root: "ق س م", rootKo: "나누다", ko: "학과, 부서", en: "department", pos: "명사", gender: "m", pl: "أَقْسَامٌ", plRoman: "aqsaamun", plPat: "أَفْعَالٌ", date: "2026-10-25", img: "🏫" },
   { id: "wasikh", ar: "وَسِخٌ", roman: "wasikhun", root: "و س خ", rootKo: "더럽다", fem: "وَسِخَةٌ", femRoman: "wasikhatun", ko: "더러운", en: "dirty", pos: "형용사", gender: "pair", date: "2026-10-25", img: "🧺" },
-  { id: "musinn", ar: "مُسِنٌّ", roman: "musinnun", root: "س ن ن", rootKo: "이 · 나이", fem: "مُسِنَّةٌ", femRoman: "musinnatun", ko: "나이든, 늙은", en: "elderly", pos: "형용사", gender: "pair", date: "2026-10-25", img: "🧓" },
+  { id: "musinn", ar: "مُسِنٌّ", roman: "musinnun", pl: "مُسِنُّونَ", plRoman: "musinnuuna", plPat: "ـُونَ", root: "س ن ن", rootKo: "이 · 나이", fem: "مُسِنَّةٌ", femRoman: "musinnatun", ko: "나이든, 늙은", en: "elderly", pos: "형용사", gender: "pair", date: "2026-10-25", img: "🧓" },
   { id: "kariim", ar: "كَرِيمٌ", roman: "kariimun", root: "ك ر م", rootKo: "너그럽다", fem: "كَرِيمَةٌ", femRoman: "kariimatun", ko: "관대한, 후한", en: "generous", pos: "형용사", gender: "pair", pl: "كُرَمَاءُ", plRoman: "kuramaau", plPat: "فُعَلَاءُ", date: "2026-10-25", img: "🤝" },
   { id: "latiif", ar: "لَطِيفٌ", roman: "latiifun", root: "ل ط ف", rootKo: "부드럽다 · 친절하다", fem: "لَطِيفَةٌ", femRoman: "latiifatun", ko: "친절한, 상냥한", en: "kind, nice", pos: "형용사", gender: "pair", date: "2026-10-25", img: "😊" },
   { id: "mudiir", ar: "مُدِيرٌ", roman: "mudiirun", root: "د و ر", rootKo: "돌다 · 집", ko: "관리자, 원장", en: "director, manager", pos: "명사", gender: "m", note: "دَارٌ(집)·دَوْلَةٌ(국가)와 같은 계열", date: "2026-10-25", img: "🧑‍💼" },
@@ -335,6 +335,11 @@ const VOCAB = [
   { id: "intushuun", ar: "إِنْتُشُونْ", roman: "intushuun", ko: "인천", en: "Incheon", pos: "지명", gender: null, date: "2026-10-25", img: "🇰🇷" },
   { id: "ghasala", ar: "غَسَلَ", roman: "ghasala", root: "غ س ل", rootKo: "씻다", ko: "그는 씻었다", en: "he washed", pos: "동사", gender: null, date: "2026-10-25", img: "🧼" },
   { id: "akhadha", ar: "أَخَذَ", roman: "akhadha", root: "أ خ ذ", rootKo: "취하다", ko: "그는 가져갔다, 데려갔다", en: "he took", pos: "동사", gender: null, note: "أَخَذْتُ = 나는 데려갔다", date: "2026-10-25", img: "🤝" },
+
+  // ── 교재 제3과 단어장 대조로 보충 (2026-11-01)
+  { id: "qaliil", ar: "قَلِيلٌ", roman: "qaliilun", root: "ق ل ل", rootKo: "적다 · 홀로", fem: "قَلِيلَةٌ", femRoman: "qaliilatun", ko: "적은, 소수의", en: "few, little", pos: "형용사", gender: "pair", pl: "قَلِيلُونَ", plRoman: "qaliiluuna", plPat: "ـُونَ", note: "كَثِيرٌ(많은)의 반대", date: "2026-11-01", img: "🤏" },
+  { id: "samia", ar: "سَمِعَ", roman: "samia", root: "س م ع", rootKo: "듣다", ko: "그는 들었다", en: "he heard", pos: "동사", gender: null, note: "سَمِعْتُ = 나는 들었다", date: "2026-11-01", img: "👂" },
+  { id: "madaha", ar: "مَدَحَ", roman: "madaha", root: "م د ح", rootKo: "칭찬하다", ko: "그는 칭찬했다", en: "he praised", pos: "동사", gender: null, date: "2026-11-01", img: "👏" },
 ];
 
 // 초창기 회화 표현 (운전 모드 루프에 사용)
@@ -1235,7 +1240,8 @@ const LESSONS = [
         title: "연습 1 · 2 (제3과 마무리)",
         rule: "제3과 전체를 한 번에 되짚는 문제다. 연결형·지시사·다섯 명사·쌍수의 ن 탈락이 섞여 나온다. 막히면 어느 절에서 나온 규칙인지부터 떠올려 보자.",
         words: ["muhandis", "qism", "wasikh", "musinn", "kariim", "latiif", "mudiir", "hammaam",
-          "mustaqill", "junayna", "baqara", "miinaa", "intushuun", "ghasala", "akhadha"],
+          "mustaqill", "junayna", "baqara", "miinaa", "intushuun", "ghasala", "akhadha",
+          "qaliil", "samia", "madaha"],
         sec: "L3.15",
       },
     ],
@@ -1244,6 +1250,17 @@ const LESSONS = [
 
 // ── 변경 내역 (맨 위가 최신). VERSION 은 첫 항목의 v 를 쓴다.
 const CHANGELOG = [
+  {
+    v: "2.2",
+    date: "2026-11-01",
+    title: "제3과 단어장 대조",
+    items: [
+      "교재 끝의 <b>단어장을 한 줄씩 대조</b>해 빠진 것을 채웠습니다",
+      "단어 3개 추가 — قَلِيلٌ(적은)·سَمِعَ(들었다)·مَدَحَ(칭찬했다)",
+      "<b>복수형 12개 보충</b> — جَدِيدٌ ج جُدُدٌ, وَجْهٌ ج وُجُوهٌ, رِجْلٌ ج أَرْجُلٌ 처럼 교재가 제시한 복수형이 빠져 있던 것들입니다",
+      "복수형이 76개가 되어 형태별 보기에서 어형별 묶음이 더 두꺼워졌습니다",
+    ],
+  },
   {
     v: "2.1",
     date: "2026-10-25",

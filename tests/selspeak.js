@@ -361,7 +361,7 @@ closeWhatsNew(); localStorage.setItem("seenVer",VERSION);
 
 // ── 어근별 보기
 const withRoot=VOCAB.filter(w=>w.root);
-t("어근 258개 단어에 붙음", withRoot.length===258, String(withRoot.length));
+t("어근 261개 단어에 붙음", withRoot.length===261, String(withRoot.length));
 t("어근 있으면 뜻풀이도 있음", withRoot.every(w=>w.rootKo), withRoot.filter(w=>!w.rootKo).map(w=>w.id).join(","));
 t("어근은 자음 사이 공백 형식", withRoot.every(w=>/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)),
   withRoot.filter(w=>!/^[\u0600-\u06FF]( [\u0600-\u06FF]){2,3}$/.test(w.root)).map(w=>w.id+":"+w.root).join(","));
@@ -471,6 +471,25 @@ t("지명 빼고 전부 어근 있음", n25.filter(w=>w.pos!=="지명").every(w=
   n25.filter(w=>w.pos!=="지명"&&!w.root).map(w=>w.id).join(","));
 t("نُفُوذٌ 가 نَافِذَةٌ 와 같은 어근", VOCAB.find(w=>w.id==="nufuudh").root===VOCAB.find(w=>w.id==="naafidha").root);
 t("مُدِيرٌ 가 دَارٌ 와 같은 어근", VOCAB.find(w=>w.id==="mudiir").root===VOCAB.find(w=>w.id==="daar").root);
+
+
+// ── 교재 단어장 대조 결과
+const BOOK3 = {
+  jadiid:"جُدُدٌ", saiid:"سُعَدَاءُ", kariim:"كُرَمَاءُ", qawiyy:"أَقْوِيَاءُ", qadiim:"قُدَمَاءُ",
+  haqiiba:"حَقَائِبُ", raiis:"رُؤَسَاءُ", wajh:"وُجُوهٌ", fasl:"فُصُولٌ", thawb:"ثِيَابٌ",
+  rijl:"أَرْجُلٌ", lahm:"لُحُومٌ", faqiir:"فُقَرَاءُ", shubbaak:"شَبَابِيكُ", qasiir:"قِصَارٌ",
+  qita:"قِطَعٌ", maqhan:"مَقَاهٍ", qarya:"قُرًى", daftar:"دَفَاتِرُ", hidhaa:"أَحْذِيَةٌ",
+  majma:"مَجَامِعُ", madkhal:"مَدَاخِلُ", miinaa:"مَوَانِئُ", daiif:"ضُعَفَاءُ",
+  qamiis:"قُمْصَانٌ", lugha:"لُغَاتٌ",
+};
+const plBad = Object.entries(BOOK3).filter(([id,pl]) => (VOCAB.find(w=>w.id===id)||{}).pl !== pl);
+t("교재가 준 복수형이 전부 들어감", plBad.length===0,
+  plBad.map(([id,pl])=>id+":"+((VOCAB.find(w=>w.id===id)||{}).pl||"없음")).join(" "));
+["qaliil","samia","madaha"].forEach(id=>t("단어장 보충 "+id, VOCAB.some(w=>w.id===id)));
+t("복수형 76개", VOCAB.filter(w=>w.pl).length===76, String(VOCAB.filter(w=>w.pl).length));
+t("보충 단어도 연습 절에 연결", ["qaliil","samia","madaha"].every(i =>
+  LESSONS.find(l=>l.id==="L3").sections.find(x=>x.id==="L3.15").words.includes(i)));
+t("VOCAB 306개", VOCAB.length===306, String(VOCAB.length));
 
 
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
