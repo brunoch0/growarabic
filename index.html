@@ -345,7 +345,10 @@ const markWrong = (id) => { const s = getSet(todayKey()); s.add(id); saveSet(tod
 const clearWrong = (id) => { const s = getSet(todayKey()); s.delete(id); saveSet(todayKey(), s); };
 
 // 단어 상태 추적: 새 단어 → 학습중 → 아는 단어(연속 3회 정답). 틀리면 다시 학습중.
+// 단어장에서 손으로 체크한 "아는 단어"(known 세트)는 자동 판정을 덮어쓴다.
 const getStats = () => JSON.parse(localStorage.getItem("wordstats") || "{}");
+let _known = null;
+const knownSet = () => _known || (_known = getSet("known"));
 function bump(id, ok) {
   const stats = getStats();
   const s = stats[id] || { seen: 0, streak: 0 };
@@ -353,11 +356,33 @@ function bump(id, ok) {
   s.streak = ok ? s.streak + 1 : 0;
   stats[id] = s;
   localStorage.setItem("wordstats", JSON.stringify(stats));
+  // 틀리면 손으로 체크한 "아는 단어"도 풀어서 다시 돌게 한다
+  if (!ok && knownSet().has(id)) toggleKnown(id);
 }
 function statusOf(id, stats) {
+  if (knownSet().has(id)) return "known";
   const s = (stats || getStats())[id];
   if (!s || !s.seen) return "new";
   return s.streak >= 3 ? "known" : "learning";
+}
+// 단어장 목록에서 체크 → 그 자리에서 다시 그린다 (스크롤 위치 유지)
+function reRender(view, arg) {
+  const y = window.scrollY;
+  go(view, arg, true);
+  window.scrollTo(0, y);
+}
+function toggleKnown(id, view, arg) {
+  const s = knownSet();
+  s.has(id) ? s.delete(id) : s.add(id);
+  saveSet("known", s);
+  _known = s;
+  if (view) reRender(view, arg);
+}
+function toggleStarAt(id, view, arg) {
+  const s = getSet("starred");
+  s.has(id) ? s.delete(id) : s.add(id);
+  saveSet("starred", s);
+  if (view) reRender(view, arg);
 }
 const shuffle = (a) => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(v => v[1]);
 VOCAB.push(...JSON.parse(localStorage.getItem("customVocab") || "[]"));
@@ -1532,8 +1557,8 @@ views.list = (filter) => {
       ${wfChip("🏆 아는 단어 제외", wordFilter.skipKnown, `setWF('skipKnown',${!wordFilter.skipKnown},'list',${fArg})`)}
     </div>` + hlLegend() + (pool.length ? "" : `<p style="text-align:center;padding:40px">조건에 맞는 단어가 없습니다</p>`) + groups.map(p => `
     <h2 style="font-size:16px;color:var(--sub);margin:18px 4px 8px">${p} (${pool.filter(w => w.pos === p).length})</h2>
-    ${pool.filter(w => w.pos === p).map(w => `
-      <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')" style="overflow:hidden">
+    ${pool.filter(w => w.pos === p).map(w => { const st = statusOf(w.id, stats), isStar = starSet.has(w.id); return `
+      <div class="phrase-card" onclick="sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')" style="overflow:hidden;border-left:4px solid ${isStar ? "#e0a800" : st === "known" ? "#2e9e5b" : "transparent"}">
         ${PHOTOS.has(w.id) ? `<img class="list-thumb" src="images/${w.id}.webp" alt="" loading="lazy">` : ""}
         <div class="arabic">${hl(w.ar)}${w.fem ? ` / ${hl(w.fem)}` : ""}</div>
         <div class="kp">${!PHOTOS.has(w.id) && w.img ? w.img + " " : ""}${w.ko} <span style="font-weight:400;font-size:15px">— ${w.en}</span></div>
@@ -1545,8 +1570,14 @@ views.list = (filter) => {
           <button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}','${w.ar.replace(/'/g, "\\'")}')">🔊 ${w.fem ? "남성형" : "발음"}</button>
           ${w.fem ? `<button class="choice" style="padding:7px 16px;font-size:14px" onclick="event.stopPropagation();sayAr('${w.id}_f','${w.fem.replace(/'/g, "\\'")}')">🔊 여성형 (ة)</button>` : ""}
         </div>
-      </div>`).join("")}`).join("") +
-    `<div class="hint">카드를 탭하면 발음을 들려줍니다</div>`;
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="choice" style="padding:7px 14px;font-size:14px;${isStar ? "background:#e0a800;color:#fff;border-color:#e0a800" : ""}"
+            onclick="event.stopPropagation();toggleStarAt('${w.id}','list',${fArg})">${isStar ? "⭐ 안 외워짐" : "☆ 안 외워짐"}</button>
+          <button class="choice" style="padding:7px 14px;font-size:14px;${st === "known" ? "background:#2e9e5b;color:#fff;border-color:#2e9e5b" : ""}"
+            onclick="event.stopPropagation();toggleKnown('${w.id}','list',${fArg})">${st === "known" ? "🏆 아는 단어" : "✓ 외웠음"}</button>
+        </div>
+      </div>`; }).join("")}`).join("") +
+    `<div class="hint">카드를 탭하면 발음을 들려줍니다 · ☆ 를 누르면 ⭐안외워짐 으로, ✓ 를 누르면 🏆아는 단어 로 표시됩니다</div>`;
 };
 
 // ── 설정 (보이스 · 메뉴 순서 · 단축키)

@@ -529,6 +529,86 @@ t("팝업에 '우리의' 설명", /우리의/.test(ph));
 t("팝업에 어근도 같이", /sp-root/.test(ph));
 
 
+// ── 단어장 목록 체크: ⭐안외워짐 / 🏆아는 단어 (수동 체크가 자동 판정을 덮어쓴다)
+localStorage.removeItem("known"); localStorage.removeItem("wordstats"); localStorage.removeItem("starred");
+_known = null;
+const KW = VOCAB[0].id;
+t("처음엔 새 단어", statusOf(KW) === "new", statusOf(KW));
+
+toggleKnown(KW);                      // 손으로 체크
+t("손으로 체크하면 아는 단어", statusOf(KW) === "known", statusOf(KW));
+t("known 세트에 저장됨", getSet("known").has(KW));
+
+toggleKnown(KW);                      // 해제
+t("다시 누르면 해제", statusOf(KW) === "new", statusOf(KW));
+
+// 자동 판정(연속 3회)도 그대로 살아있다
+bump(KW, true); bump(KW, true); bump(KW, true);
+t("연속 3회 정답 → 아는 단어", statusOf(KW) === "known", statusOf(KW));
+
+// 손으로 체크해둔 단어를 카드에서 틀리면 체크가 풀려서 다시 돈다
+localStorage.removeItem("wordstats"); localStorage.removeItem("known"); _known = null;
+toggleKnown(KW);
+t("체크 상태 확인", statusOf(KW) === "known");
+bump(KW, false);
+t("틀리면 수동 체크가 풀린다", statusOf(KW) !== "known", statusOf(KW));
+t("   known 세트에서도 빠짐", !getSet("known").has(KW));
+
+// ⭐ 안외워짐 토글
+t("처음엔 별 없음", !getSet("starred").has(KW));
+toggleStarAt(KW);
+t("toggleStarAt → 별 붙음", getSet("starred").has(KW));
+toggleStarAt(KW);
+t("한 번 더 → 별 빠짐", !getSet("starred").has(KW));
+
+// skipKnown 필터가 수동 체크한 단어도 걸러내는지
+localStorage.removeItem("known"); _known = null;
+const two = VOCAB.slice(0, 2).map(w => w.id);
+toggleKnown(two[0]);
+wordFilter = { pos: "", starOnly: false, skipKnown: true };
+const kept = applyFilter(VOCAB.slice(0, 2)).map(w => w.id);
+t("🏆 아는 단어 제외 → 체크한 건 사라짐", !kept.includes(two[0]) && kept.includes(two[1]), kept.join(","));
+wordFilter = { pos: "", starOnly: false, skipKnown: false };
+localStorage.removeItem("known"); localStorage.removeItem("wordstats"); localStorage.removeItem("starred"); _known = null;
+
+// ── 음성 커버리지: VOCAB 에 있는데 녹음이 없는 단어가 생기면 여기서 걸린다
+// (단어를 추가하고 음성 생성을 잊는 실수가 이 앱에서 다섯 번 반복됐다 — 그래서 테스트로 고정한다)
+{
+  const noBase = VOCAB.filter(w => !AUDIO.has(w.id)).map(w => w.id);
+  const noFem  = VOCAB.filter(w => w.fem && !AUDIO.has(w.id + "_f")).map(w => w.id + "_f");
+  const noPl   = VOCAB.filter(w => w.pl  && !AUDIO.has(w.id + "_pl")).map(w => w.id + "_pl");
+  t("모든 단어에 기본형 음성이 있다", noBase.length === 0, noBase.slice(0, 15).join(","));
+  t("여성형이 있는 단어는 여성형 음성도 있다", noFem.length === 0, noFem.slice(0, 15).join(","));
+  t("복수형이 있는 단어는 복수형 음성도 있다", noPl.length === 0, noPl.slice(0, 15).join(","));
+}
+
+// ── 단어장 목록이 실제로 렌더되는지 (템플릿 문법 오류·런타임 오류를 잡는다)
+{
+  localStorage.removeItem("known"); localStorage.removeItem("starred"); _known = null;
+  wordFilter = { pos: "", starOnly: false, skipKnown: false };
+  let err = null;
+  try { views.list(undefined); } catch (e) { err = e; }
+  t("단어장 목록이 오류 없이 렌더된다", !err, err ? err.message : "");
+  const html = $("#main").innerHTML || "";
+  t("   체크 버튼이 그려진다", html.includes("toggleStarAt(") && html.includes("toggleKnown("));
+  t("   기본 상태는 ☆ / ✓", html.includes("\u2606 안 외워짐") && html.includes("\u2713 외웠음"));
+
+  // 한 단어를 아는 단어로 체크하면 목록 표시가 바뀐다
+  const id0 = VOCAB[0].id;
+  toggleKnown(id0);
+  views.list(undefined);
+  t("   체크하면 🏆 로 바뀐다", ($("#main").innerHTML || "").includes("\ud83c\udfc6 아는 단어"));
+
+  // skipKnown 을 켜면 목록에서 빠진다
+  wordFilter = { pos: "", starOnly: false, skipKnown: true };
+  views.list(undefined);
+  const h2 = $("#main").innerHTML || "";
+  t("   '아는 단어 제외' 를 켜면 목록에서 사라진다", !h2.includes("toggleKnown('" + id0 + "'"));
+
+  wordFilter = { pos: "", starOnly: false, skipKnown: false };
+  localStorage.removeItem("known"); localStorage.removeItem("starred"); _known = null;
+}
+
 console.log("PASS:"); ok.forEach(x => console.log("  \u2713 " + x));
 if (bad.length) { console.log("\nFAIL:"); bad.forEach(x => console.log("  \u2717 " + x)); process.exit(1); }
 console.log(`\n${ok.length}/${ok.length} \ud1b5\uacfc`);
